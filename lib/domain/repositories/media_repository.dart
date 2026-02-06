@@ -13,31 +13,22 @@ abstract class MediaRepository {
   /// Get all artists from the device
   Future<List<Artist>> getAllArtists();
 
-  /// Get tracks by album ID
-  Future<List<Track>> getTracksByAlbum(int albumId);
+  /// Get tracks for a specific album
+  Future<List<Track>> getTracksForAlbum(String albumId);
 
-  /// Get tracks by artist ID
-  Future<List<Track>> getTracksByArtist(int artistId);
+  /// Get tracks for a specific artist
+  Future<List<Track>> getTracksForArtist(String artistId);
 
   /// Search tracks by query
   Future<List<Track>> searchTracks(String query);
 
-  /// Get a specific track by ID
-  Future<Track?> getTrackById(int trackId);
+  /// Get artwork for a track
+  Future<List<int>?> getTrackArtwork(int trackId);
 
-  /// Get a specific album by ID
-  Future<Album?> getAlbumById(int albumId);
+  /// Get artwork for an album
+  Future<List<int>?> getAlbumArtwork(int albumId);
 
-  /// Get a specific artist by ID
-  Future<Artist?> getArtistById(int artistId);
-
-  /// Refresh the media library (scan for new files)
-  Future<void> refreshLibrary();
-
-  /// Check if library has been scanned
-  Future<bool> isLibraryScanned();
-
-  /// Clear cached media data
-  Future<void> clearCache();
+  /// Get total count of tracks on device
+  Future<int> getTrackCount();
 }
 

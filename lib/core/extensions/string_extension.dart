@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// Extensions on String
 extension StringExtension on String {

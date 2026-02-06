@@ -13,26 +13,22 @@ class AppLogger {
 
   /// Log debug message
   void debug(String message, {dynamic error, StackTrace? stackTrace}) {
-    if (!_enableLogging) return;
-    _log('DEBUG', message, error, stackTrace);
+    _instance._log('DEBUG', message, error, stackTrace);
   }
 
   /// Log info message
   void info(String message, {dynamic error, StackTrace? stackTrace}) {
-    if (!_enableLogging) return;
-    _log('INFO', message, error, stackTrace);
+    _instance._log('INFO', message, error, stackTrace);
   }
 
   /// Log warning message
   void warning(String message, {dynamic error, StackTrace? stackTrace}) {
-    if (!_enableLogging) return;
-    _log('WARNING', message, error, stackTrace);
+    _instance._log('WARNING', message, error, stackTrace);
   }
 
   /// Log error message
   void error(String message, {dynamic error, StackTrace? stackTrace}) {
-    if (!_enableLogging) return;
-    _log('ERROR', message, error, stackTrace);
+    _instance._log('ERROR', message, error, stackTrace);
   }
 
   /// Internal logging method
@@ -42,6 +38,7 @@ class AppLogger {
     dynamic error,
     StackTrace? stackTrace,
   ) {
+    if (!_enableLogging) return;
     final buffer = StringBuffer();
     buffer.write('$_logTag [$level] $message');
 

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// Extensions on Duration
 extension DurationExtension on Duration {

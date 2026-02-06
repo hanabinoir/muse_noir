@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// Custom exceptions for the app
 abstract class AppException implements Exception {
