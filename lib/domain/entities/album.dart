@@ -5,6 +5,7 @@ class Album {
   final String artist;
   final List<int> trackIds;
   final String? albumArt;
+  final List<int>? artwork;
   final int? year;
   final int numOfSongs;
 
@@ -14,6 +15,7 @@ class Album {
     required this.artist,
     required this.trackIds,
     this.albumArt,
+    this.artwork,
     this.year,
     required this.numOfSongs,
   });
@@ -25,6 +27,7 @@ class Album {
     String? artist,
     List<int>? trackIds,
     String? albumArt,
+    List<int>? artwork,
     int? year,
     int? numOfSongs,
   }) {
@@ -34,6 +37,7 @@ class Album {
       artist: artist ?? this.artist,
       trackIds: trackIds ?? this.trackIds,
       albumArt: albumArt ?? this.albumArt,
+      artwork: artwork ?? this.artwork,
       year: year ?? this.year,
       numOfSongs: numOfSongs ?? this.numOfSongs,
     );

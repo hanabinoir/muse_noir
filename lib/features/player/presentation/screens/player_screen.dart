@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:muse_noir/core/widgets/base_scaffold.dart';
 import 'package:muse_noir/features/player/state/audio_state.dart';
 import 'package:muse_noir/features/player/controller/player_controller.dart';
+import 'package:muse_noir/domain/entities/track.dart';
 
 /// Main player screen showing now playing track with controls
 class PlayerScreen extends ConsumerWidget {
@@ -13,14 +14,12 @@ class PlayerScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTrack = ref.watch(currentTrackProvider);
-    final position = ref.watch(positionProvider);
-    final duration = ref.watch(durationProvider);
     final audioService = ref.watch(audioServiceProvider);
 
     return BaseScaffold(
       title: 'Now Playing',
       body: currentTrack != null
-          ? _buildPlayerContent(context, ref, currentTrack, audioService, position, duration)
+          ? _buildPlayerContent(context, ref, currentTrack, audioService)
           : _buildEmptyState(),
     );
   }
@@ -28,71 +27,24 @@ class PlayerScreen extends ConsumerWidget {
   Widget _buildPlayerContent(
     BuildContext context,
     WidgetRef ref,
-    dynamic track,
+    track,
     dynamic audioService,
-    AsyncValue<Duration> position,
-    AsyncValue<Duration?> duration,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Album art placeholder
-          Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              color: Colors.purple.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.music_note,
-              size: 150,
-              color: Colors.purple,
-            ),
-          ),
+          // Album art - extracted to prevent rebuilds
+          _buildArtworkContainer(track.artwork),
           const SizedBox(height: 32),
 
-          // Track info
-          Text(
-            track.title ?? 'Unknown Track',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            track.artist ?? 'Unknown Artist',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[400],
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            track.album ?? 'Unknown Album',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-            textAlign: TextAlign.center,
-          ),
+          // Track info - static, only changes with new track
+          _buildTrackInfo(track),
           const SizedBox(height: 32),
 
-          // Progress bar
-          position.when(
-            data: (pos) => duration.when(
-              data: (dur) => _buildProgressBar(ref, pos, dur ?? Duration.zero),
-              loading: () => const SizedBox(height: 80),
-              error: (_, __) => const SizedBox(height: 80),
-            ),
-            loading: () => const SizedBox(height: 80),
-            error: (_, __) => const SizedBox(height: 80),
-          ),
+          // Progress bar with StreamBuilder - only rebuilds on position changes
+          _buildProgressBarWithStream(ref, audioService),
 
           const SizedBox(height: 32),
 
@@ -106,6 +58,90 @@ class PlayerScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// Build track information - extracted to prevent unnecessary rebuilds
+  Widget _buildTrackInfo(Track track) {
+    return Column(
+      children: [
+        Text(
+          track.title ?? 'Unknown Track',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          track.artist ?? 'Unknown Artist',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[400],
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          track.album ?? 'Unknown Album',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[500],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  /// Build progress bar with StreamBuilder to only rebuild on position/duration changes
+  Widget _buildProgressBarWithStream(WidgetRef ref, dynamic audioService) {
+    return StreamBuilder<Duration>(
+      stream: audioService.positionStream,
+      builder: (context, positionSnapshot) {
+        return StreamBuilder<Duration?>(
+          stream: audioService.durationStream,
+          builder: (context, durationSnapshot) {
+            final position = positionSnapshot.data ?? Duration.zero;
+            final trackDuration = durationSnapshot.data ?? Duration.zero;
+
+            return _buildProgressBar(ref, position, trackDuration);
+          },
+        );
+      },
+    );
+  }
+
+  /// Build artwork container - extracted to prevent unnecessary rebuilds
+  Widget _buildArtworkContainer(List<int>? artwork) {
+    return Container(
+      width: 300,
+      height: 300,
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: artwork != null && artwork.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.memory(
+                Uint8List.fromList(artwork),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.music_note,
+                    size: 150,
+                    color: Colors.purple,
+                  );
+                },
+              ),
+            )
+          : const Icon(
+              Icons.music_note,
+              size: 150,
+              color: Colors.purple,
+            ),
     );
   }
 

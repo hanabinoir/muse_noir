@@ -34,18 +34,21 @@ class MediaScannerService {
       _logger.info('Found ${musicTracks.length} tracks in External Storage Music directory');
 
       // Convert to Track entities
-      final trackList = musicTracks
-          .map((song) => Track(
-                id: song.id,
-                title: song.title,
-                artist: song.artist ?? 'Unknown Artist',
-                album: song.album ?? 'Unknown Album',
-                duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data,
-                albumId: song.albumId?.toString(),
-                artistId: song.artistId?.toString(),
-              ))
-          .toList();
+      final trackList = <Track>[];
+      for (final song in musicTracks) {
+        final artwork = await getTrackArtwork(song.id);
+        trackList.add(Track(
+          id: song.id,
+          title: song.title,
+          artist: song.artist ?? 'Unknown Artist',
+          album: song.album ?? 'Unknown Album',
+          duration: Duration(milliseconds: song.duration ?? 0),
+          filePath: song.data,
+          albumId: song.albumId?.toString(),
+          artistId: song.artistId?.toString(),
+          artwork: artwork,
+        ));
+      }
 
       return trackList;
     } catch (e) {
@@ -70,15 +73,18 @@ class MediaScannerService {
       _logger.info('Found ${albums.length} albums');
 
       // Convert to Album entities
-      final albumList = albums
-          .map((album) => Album(
-                id: album.id,
-                title: album.album,
-                artist: album.artist ?? 'Unknown Artist',
-                numOfSongs: album.numOfSongs,
-                trackIds: [],
-              ))
-          .toList();
+      final albumList = <Album>[];
+      for (final album in albums) {
+        final artwork = await getAlbumArtwork(album.id);
+        albumList.add(Album(
+          id: album.id,
+          title: album.album,
+          artist: album.artist ?? 'Unknown Artist',
+          numOfSongs: album.numOfSongs,
+          trackIds: [],
+          artwork: artwork,
+        ));
+      }
 
       return albumList;
     } catch (e) {
@@ -219,18 +225,21 @@ class MediaScannerService {
 
       _logger.info('Search found ${filtered.length} results in External Storage Music directory');
 
-      final trackList = filtered
-          .map((song) => Track(
-                id: song.id,
-                title: song.title,
-                artist: song.artist ?? 'Unknown Artist',
-                album: song.album ?? 'Unknown Album',
-                duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data,
-                albumId: song.albumId?.toString(),
-                artistId: song.artistId?.toString(),
-              ))
-          .toList();
+      final trackList = <Track>[];
+      for (final song in filtered) {
+        final artwork = await getTrackArtwork(song.id);
+        trackList.add(Track(
+          id: song.id,
+          title: song.title,
+          artist: song.artist ?? 'Unknown Artist',
+          album: song.album ?? 'Unknown Album',
+          duration: Duration(milliseconds: song.duration ?? 0),
+          filePath: song.data,
+          albumId: song.albumId?.toString(),
+          artistId: song.artistId?.toString(),
+          artwork: artwork,
+        ));
+      }
 
       return trackList;
     } catch (e) {

@@ -66,6 +66,7 @@ class AlbumsScreen extends ConsumerWidget {
                     title: album.title,
                     artist: album.artist,
                     trackCount: album.trackIds.length,
+                    artwork: album.artwork,
                     onTap: () {
                       // Navigate to album details
                     },

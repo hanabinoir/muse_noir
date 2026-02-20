@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:typed_data';
 import 'package:just_audio/just_audio.dart';
 import 'package:muse_noir/features/player/state/audio_state.dart';
 import 'package:muse_noir/features/player/controller/player_controller.dart';
@@ -29,18 +30,8 @@ class MiniPlayer extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.music_note,
-                      color: Colors.purple,
-                    ),
-                  ),
+                  // Artwork container - stable, doesn't rebuild with playback state
+                  _buildArtworkContainer(currentTrack.artwork),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -67,6 +58,7 @@ class MiniPlayer extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
+                  // Only play/pause button rebuilds on playback state changes
                   StreamBuilder<PlayerState>(
                     stream: audioService.playerStateStream,
                     builder: (context, snapshot) {
@@ -90,6 +82,36 @@ class MiniPlayer extends ConsumerWidget {
             ),
           )
         : const SizedBox.shrink();
+  }
+
+  /// Build artwork container - extracted to prevent unnecessary rebuilds
+  Widget _buildArtworkContainer(List<int>? artwork) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: artwork != null && artwork.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.memory(
+                Uint8List.fromList(artwork),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.music_note,
+                    color: Colors.purple,
+                  );
+                },
+              ),
+            )
+          : const Icon(
+              Icons.music_note,
+              color: Colors.purple,
+            ),
+    );
   }
 }
 

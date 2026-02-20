@@ -10,6 +10,7 @@ class Track {
   final String? genre;
   final String? albumId;
   final String? artistId;
+  final List<int>? artwork;
   final DateTime? dateAdded;
   final int? dateModified;
 
@@ -24,6 +25,7 @@ class Track {
     this.genre,
     this.albumId,
     this.artistId,
+    this.artwork,
     this.dateAdded,
     this.dateModified,
   });
@@ -40,6 +42,7 @@ class Track {
     String? genre,
     String? albumId,
     String? artistId,
+    List<int>? artwork,
     DateTime? dateAdded,
     int? dateModified,
   }) {
@@ -54,6 +57,7 @@ class Track {
       genre: genre ?? this.genre,
       albumId: albumId ?? this.albumId,
       artistId: artistId ?? this.artistId,
+      artwork: artwork ?? this.artwork,
       dateAdded: dateAdded ?? this.dateAdded,
       dateModified: dateModified ?? this.dateModified,
     );
