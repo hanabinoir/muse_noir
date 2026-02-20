@@ -194,7 +194,7 @@ class MediaScannerService {
       // Filter tracks based on query
       final filtered = tracks
           .where((song) =>
-              (song.displayName?.toLowerCase().contains(query.toLowerCase()) ??
+              (song.displayName.toLowerCase().contains(query.toLowerCase()) ??
                   false) ||
               (song.artist?.toLowerCase().contains(query.toLowerCase()) ??
                   false) ||

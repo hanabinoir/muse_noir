@@ -16,7 +16,7 @@ class BaseScaffold extends StatelessWidget {
   final EdgeInsets bodyPadding;
 
   const BaseScaffold({
-    Key? key,
+    super.key,
     this.title,
     required this.body,
     this.floatingActionButton,
@@ -29,12 +29,12 @@ class BaseScaffold extends StatelessWidget {
     this.backgroundColor,
     this.onLeadingPressed,
     this.bodyPadding = const EdgeInsets.all(0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.background,
+      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
       appBar: showAppBar
           ? AppBar(
               title: title != null ? Text(title!) : null,

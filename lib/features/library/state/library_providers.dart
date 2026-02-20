@@ -3,7 +3,6 @@ import 'package:muse_noir/domain/entities/track.dart';
 import 'package:muse_noir/domain/entities/album.dart';
 import 'package:muse_noir/domain/entities/artist.dart';
 import 'package:muse_noir/features/library/state/library_state.dart';
-import 'package:muse_noir/core/providers/providers.dart';
 
 /// Provider for managing all tracks
 final allTracksProvider =

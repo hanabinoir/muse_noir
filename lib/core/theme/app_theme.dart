@@ -34,7 +34,6 @@ class AppTheme {
       transparentStatusBar: true,
       visualDensity: VisualDensity.adaptivePlatformDensity,
     ).copyWith(
-      useMaterial3: true,
       textTheme: _darkTextTheme(),
       inputDecorationTheme: _inputDecorationTheme(false),
       elevatedButtonTheme: _elevatedButtonTheme(false),
@@ -60,8 +59,6 @@ class AppTheme {
         onTertiary: Colors.white,
         surface: Colors.white,
         onSurface: Colors.black87,
-        background: Colors.grey[50]!,
-        onBackground: Colors.black87,
         error: AppColors.error,
         onError: Colors.white,
       ),
@@ -75,7 +72,6 @@ class AppTheme {
       transparentStatusBar: true,
       visualDensity: VisualDensity.adaptivePlatformDensity,
     ).copyWith(
-      useMaterial3: true,
       textTheme: _lightTextTheme(),
       inputDecorationTheme: _inputDecorationTheme(true),
       elevatedButtonTheme: _elevatedButtonTheme(true),

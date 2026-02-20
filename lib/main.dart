@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muse_noir/core/theme/app_theme.dart';
+import 'package:muse_noir/features/permissions/presentation/app_root.dart';
 
 void main() {
   runApp(
@@ -20,14 +21,16 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.darkTheme(),
       darkTheme: AppTheme.darkTheme(),
       themeMode: ThemeMode.dark,
-      home: const HomeScreen(),
+      home: const AppRoot(
+        mainAppWidget: HomeScreen(),
+      ),
     );
   }
 }
 
 /// Placeholder home screen - to be replaced with proper implementation
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
