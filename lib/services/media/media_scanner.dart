@@ -12,30 +12,38 @@ class MediaScannerService {
 
   /// Get all audio tracks from the device
   /// Returns a list of Track entities sorted by title
+  /// Only returns tracks from External Storage > Music directory
   Future<List<Track>> getAllTracks() async {
     try {
-      _logger.info('Scanning for all tracks...');
+      _logger.info('Scanning for all tracks from External Storage Music directory...');
 
-      // Query all audio files
+      // Query all audio files from external storage
       final tracks = await _audioQuery.querySongs(
         sortType: SongSortType.DISPLAY_NAME,
         orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.INTERNAL,
+        uriType: UriType.EXTERNAL,
       );
 
-      _logger.info('Found ${tracks.length} tracks');
+      // Filter tracks to only include those in the Music directory on external storage
+      final musicTracks = tracks.where((song) {
+        final path = song.data.toLowerCase();
+        // Check if track is in Music folder on external storage (common paths)
+        return path.contains('/music/');
+      }).toList();
+
+      _logger.info('Found ${musicTracks.length} tracks in External Storage Music directory');
 
       // Convert to Track entities
-      final trackList = tracks
+      final trackList = musicTracks
           .map((song) => Track(
                 id: song.id,
-                title: song.displayName ?? 'Unknown',
+                title: song.title,
                 artist: song.artist ?? 'Unknown Artist',
                 album: song.album ?? 'Unknown Album',
                 duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data ?? '',
-                // albumId: song.albumId?.toString(),
-                // artistId: song.artistId?.toString(),
+                filePath: song.data,
+                albumId: song.albumId?.toString(),
+                artistId: song.artistId?.toString(),
               ))
           .toList();
 
@@ -48,14 +56,15 @@ class MediaScannerService {
 
   /// Get all albums from the device
   /// Returns a list of Album entities sorted by name
+  /// Scans External Storage Music directory
   Future<List<Album>> getAllAlbums() async {
     try {
-      _logger.info('Scanning for all albums...');
+      _logger.info('Scanning for all albums from External Storage...');
 
       final albums = await _audioQuery.queryAlbums(
         sortType: AlbumSortType.ALBUM,
         orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.INTERNAL,
+        uriType: UriType.EXTERNAL,
       );
 
       _logger.info('Found ${albums.length} albums');
@@ -64,9 +73,9 @@ class MediaScannerService {
       final albumList = albums
           .map((album) => Album(
                 id: album.id,
-                title: album.album ?? 'Unknown Album',
+                title: album.album,
                 artist: album.artist ?? 'Unknown Artist',
-                numOfSongs: album.numOfSongs ?? 0,
+                numOfSongs: album.numOfSongs,
                 trackIds: [],
               ))
           .toList();
@@ -80,14 +89,15 @@ class MediaScannerService {
 
   /// Get all artists from the device
   /// Returns a list of Artist entities sorted by name
+  /// Scans External Storage Music directory
   Future<List<Artist>> getAllArtists() async {
     try {
-      _logger.info('Scanning for all artists...');
+      _logger.info('Scanning for all artists from External Storage...');
 
       final artists = await _audioQuery.queryArtists(
         sortType: ArtistSortType.ARTIST,
         orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.INTERNAL,
+        uriType: UriType.EXTERNAL,
       );
 
       _logger.info('Found ${artists.length} artists');
@@ -96,11 +106,11 @@ class MediaScannerService {
       final artistList = artists
           .map((artist) => Artist(
                 id: artist.id,
-                name: artist.artist ?? 'Unknown Artist',
+                name: artist.artist,
                 albumIds: [],
                 trackIds: [],
-                numberOfAlbums: 0,
-                numberOfTracks: 0,
+                numberOfAlbums: artist.numberOfAlbums ?? 0,
+                numberOfTracks: artist.numberOfTracks ?? 0,
               ))
           .toList();
 
@@ -126,13 +136,13 @@ class MediaScannerService {
       final trackList = tracks
           .map((song) => Track(
                 id: song.id,
-                title: song.displayName ?? 'Unknown',
+                title: song.title,
                 artist: song.artist ?? 'Unknown Artist',
                 album: song.album ?? 'Unknown Album',
                 duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data ?? '',
-                // albumId: song.albumId?.toString(),
-                // artistId: song.artistId?.toString(),
+                filePath: song.data,
+                albumId: song.albumId?.toString(),
+                artistId: song.artistId?.toString(),
               ))
           .toList();
 
@@ -158,13 +168,13 @@ class MediaScannerService {
       final trackList = tracks
           .map((song) => Track(
                 id: song.id,
-                title: song.displayName ?? 'Unknown',
+                title: song.title,
                 artist: song.artist ?? 'Unknown Artist',
                 album: song.album ?? 'Unknown Album',
                 duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data ?? '',
-                // albumId: song.albumId?.toString(),
-                // artistId: song.artistId?.toString(),
+                filePath: song.data,
+                albumId: song.albumId?.toString(),
+                artistId: song.artistId?.toString(),
               ))
           .toList();
 
@@ -177,42 +187,48 @@ class MediaScannerService {
 
   /// Search tracks by query string
   /// Searches in title, artist, and album fields
+  /// Only searches tracks in External Storage > Music directory
   Future<List<Track>> searchTracks(String query) async {
     try {
       if (query.isEmpty) {
         return [];
       }
 
-      _logger.info('Searching for tracks: $query');
+      _logger.info('Searching for tracks in External Storage Music directory: $query');
 
       final tracks = await _audioQuery.querySongs(
         sortType: SongSortType.DISPLAY_NAME,
         orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.INTERNAL,
+        uriType: UriType.EXTERNAL,
       );
 
-      // Filter tracks based on query
-      final filtered = tracks
+      // Filter to Music directory tracks first
+      final musicTracks = tracks.where((song) {
+        final path = song.data.toLowerCase();
+        return path.contains('/music/');
+      }).toList();
+
+      // Then filter based on query
+      final filtered = musicTracks
           .where((song) =>
-              (song.displayName.toLowerCase().contains(query.toLowerCase()) ??
-                  false) ||
+              (song.title.toLowerCase().contains(query.toLowerCase())) ||
               (song.artist?.toLowerCase().contains(query.toLowerCase()) ??
                   false) ||
               (song.album?.toLowerCase().contains(query.toLowerCase()) ?? false))
           .toList();
 
-      _logger.info('Search found ${filtered.length} results');
+      _logger.info('Search found ${filtered.length} results in External Storage Music directory');
 
       final trackList = filtered
           .map((song) => Track(
                 id: song.id,
-                title: song.displayName ?? 'Unknown',
+                title: song.title,
                 artist: song.artist ?? 'Unknown Artist',
                 album: song.album ?? 'Unknown Album',
                 duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data ?? '',
-                // albumId: song.albumId?.toString(),
-                // artistId: song.artistId?.toString(),
+                filePath: song.data,
+                albumId: song.albumId?.toString(),
+                artistId: song.artistId?.toString(),
               ))
           .toList();
 
@@ -224,7 +240,7 @@ class MediaScannerService {
   }
 
   /// Get album artwork for a track
-  /// Returns artwork as a List<int> (bytes)
+  /// Returns artwork as a int List (bytes)
   Future<List<int>?> getTrackArtwork(int trackId) async {
     try {
       final artwork = await _audioQuery.queryArtwork(
@@ -239,7 +255,7 @@ class MediaScannerService {
   }
 
   /// Get album artwork for an album
-  /// Returns artwork as a List<int> (bytes)
+  /// Returns artwork as a int List (bytes)
   Future<List<int>?> getAlbumArtwork(int albumId) async {
     try {
       final artwork = await _audioQuery.queryArtwork(

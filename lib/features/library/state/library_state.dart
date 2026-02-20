@@ -2,28 +2,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muse_noir/domain/entities/track.dart';
 import 'package:muse_noir/domain/entities/album.dart';
 import 'package:muse_noir/domain/entities/artist.dart';
-import 'package:muse_noir/domain/usecases/get_all_tracks_usecase.dart';
-import 'package:muse_noir/domain/usecases/get_all_albums_usecase.dart';
-import 'package:muse_noir/domain/usecases/get_all_artists_usecase.dart';
-import 'package:muse_noir/domain/usecases/search_tracks_usecase.dart';
 import 'package:muse_noir/core/utils/logger.dart';
 import 'package:muse_noir/core/providers/providers.dart';
 
 /// State notifier for managing library tracks
 class LibraryNotifier extends Notifier<List<Track>> {
-  late GetAllTracksUseCase _getAllTracksUseCase;
   final AppLogger _logger = AppLogger();
 
   @override
   List<Track> build() {
-    _getAllTracksUseCase = ref.watch(getAllTracksUsecaseProvider);
     return [];
   }
 
-  /// Fetch all tracks
+  /// Fetch all tracks from device
   Future<void> fetchAllTracks() async {
     try {
-      state = await _getAllTracksUseCase.call();
+      _logger.info('Fetching all tracks...');
+      final getAllTracksUsecase = ref.watch(getAllTracksUsecaseProvider);
+      state = await getAllTracksUsecase.call();
       _logger.info('Fetched ${state.length} tracks');
     } catch (e, stackTrace) {
       _logger.error('Error fetching tracks: $e', error: e, stackTrace: stackTrace);
@@ -34,19 +30,19 @@ class LibraryNotifier extends Notifier<List<Track>> {
 
 /// State notifier for managing albums
 class AlbumNotifier extends Notifier<List<Album>> {
-  late GetAllAlbumsUseCase _getAllAlbumsUseCase;
   final AppLogger _logger = AppLogger();
 
   @override
   List<Album> build() {
-    _getAllAlbumsUseCase = ref.watch(getAllAlbumsUsecaseProvider);
     return [];
   }
 
-  /// Fetch all albums
+  /// Fetch all albums from device
   Future<void> fetchAllAlbums() async {
     try {
-      state = await _getAllAlbumsUseCase.call();
+      _logger.info('Fetching all albums...');
+      final getAllAlbumsUsecase = ref.watch(getAllAlbumsUsecaseProvider);
+      state = await getAllAlbumsUsecase.call();
       _logger.info('Fetched ${state.length} albums');
     } catch (e, stackTrace) {
       _logger.error('Error fetching albums: $e', error: e, stackTrace: stackTrace);
@@ -57,19 +53,19 @@ class AlbumNotifier extends Notifier<List<Album>> {
 
 /// State notifier for managing artists
 class ArtistNotifier extends Notifier<List<Artist>> {
-  late GetAllArtistsUseCase _getAllArtistsUseCase;
   final AppLogger _logger = AppLogger();
 
   @override
   List<Artist> build() {
-    _getAllArtistsUseCase = ref.watch(getAllArtistsUsecaseProvider);
     return [];
   }
 
-  /// Fetch all artists
+  /// Fetch all artists from device
   Future<void> fetchAllArtists() async {
     try {
-      state = await _getAllArtistsUseCase.call();
+      _logger.info('Fetching all artists...');
+      final getAllArtistsUsecase = ref.watch(getAllArtistsUsecaseProvider);
+      state = await getAllArtistsUsecase.call();
       _logger.info('Fetched ${state.length} artists');
     } catch (e, stackTrace) {
       _logger.error('Error fetching artists: $e', error: e, stackTrace: stackTrace);
@@ -80,12 +76,10 @@ class ArtistNotifier extends Notifier<List<Artist>> {
 
 /// State notifier for managing search results
 class SearchNotifier extends Notifier<List<Track>> {
-  late SearchTracksUseCase _searchTracksUseCase;
   final AppLogger _logger = AppLogger();
 
   @override
   List<Track> build() {
-    _searchTracksUseCase = ref.watch(searchTracksUsecaseProvider);
     return [];
   }
 
@@ -96,8 +90,10 @@ class SearchNotifier extends Notifier<List<Track>> {
         state = [];
         return;
       }
-      state = await _searchTracksUseCase.call(query);
-      _logger.info('Search found ${state.length} results for: $query');
+      _logger.info('Searching for: $query');
+      final searchTracksUsecase = ref.watch(searchTracksUsecaseProvider);
+      state = await searchTracksUsecase.call(query);
+      _logger.info('Search found ${state.length} results');
     } catch (e, stackTrace) {
       _logger.error('Error searching tracks: $e', error: e, stackTrace: stackTrace);
       rethrow;
@@ -109,4 +105,29 @@ class SearchNotifier extends Notifier<List<Track>> {
     state = [];
   }
 }
+
+/// Tracks provider
+final tracksProvider = NotifierProvider<LibraryNotifier, List<Track>>(() {
+  return LibraryNotifier();
+});
+
+/// Albums provider
+final albumsProvider = NotifierProvider<AlbumNotifier, List<Album>>(() {
+  return AlbumNotifier();
+});
+
+/// Artists provider
+final artistsProvider = NotifierProvider<ArtistNotifier, List<Artist>>(() {
+  return ArtistNotifier();
+});
+
+/// Search results provider
+final searchResultsProvider = NotifierProvider<SearchNotifier, List<Track>>(() {
+  return SearchNotifier();
+});
+
+/// Search query provider for text input
+// final searchQueryProvider = NotifierProvider<String>(() {
+//   return '';
+// });
 

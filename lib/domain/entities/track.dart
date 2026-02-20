@@ -8,6 +8,8 @@ class Track {
   final Duration duration;
   final String? albumArtist;
   final String? genre;
+  final String? albumId;
+  final String? artistId;
   final DateTime? dateAdded;
   final int? dateModified;
 
@@ -20,6 +22,8 @@ class Track {
     required this.duration,
     this.albumArtist,
     this.genre,
+    this.albumId,
+    this.artistId,
     this.dateAdded,
     this.dateModified,
   });
@@ -34,6 +38,8 @@ class Track {
     Duration? duration,
     String? albumArtist,
     String? genre,
+    String? albumId,
+    String? artistId,
     DateTime? dateAdded,
     int? dateModified,
   }) {
@@ -46,6 +52,8 @@ class Track {
       duration: duration ?? this.duration,
       albumArtist: albumArtist ?? this.albumArtist,
       genre: genre ?? this.genre,
+      albumId: albumId ?? this.albumId,
+      artistId: artistId ?? this.artistId,
       dateAdded: dateAdded ?? this.dateAdded,
       dateModified: dateModified ?? this.dateModified,
     );
