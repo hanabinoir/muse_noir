@@ -1,22 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muse_noir/domain/repositories/media_repository.dart';
 import 'package:muse_noir/domain/repositories/playlist_repository.dart';
-import 'package:muse_noir/domain/usecases/add_track_to_playlist_usecase.dart';
-import 'package:muse_noir/domain/usecases/create_playlist_usecase.dart';
-import 'package:muse_noir/domain/usecases/delete_playlist_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_all_albums_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_all_artists_usecase.dart';
-import 'package:muse_noir/domain/usecases/get_all_playlists_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_all_tracks_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_tracks_for_album_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_tracks_for_artist_usecase.dart';
-import 'package:muse_noir/domain/usecases/remove_track_from_playlist_usecase.dart';
+import 'package:muse_noir/domain/usecases/playlist_usecases.dart';
 import 'package:muse_noir/services/audio/audio_service.dart';
 import 'package:muse_noir/services/media/media_scanner.dart';
 import 'package:muse_noir/services/media/media_library_service.dart';
 import 'package:muse_noir/services/permissions/permission_service.dart';
 import 'package:muse_noir/data/datasources/local_media_datasource.dart';
+import 'package:muse_noir/data/datasources/local_playlist_datasource.dart';
 import 'package:muse_noir/data/repositories/media_repository.dart' as media_repo_impl;
+import 'package:muse_noir/data/repositories/playlist_repository.dart' as playlist_repo_impl;
 
 // Audio Service (Phase 2)
 final audioServiceProvider = Provider<AudioService>((ref) {
@@ -52,12 +50,7 @@ final mediaRepositoryProvider = Provider<MediaRepository>((ref) {
   return media_repo_impl.MediaRepositoryImpl(localDataSource);
 });
 
-/// Provider for PlaylistRepository
-final playlistRepositoryProvider = Provider<PlaylistRepository>((ref) {
-  throw UnimplementedError('PlaylistRepository not yet implemented');
-});
-
-// Use cases
+// Media Use cases
 
 /// Provider for GetAllTracksUsecase
 final getAllTracksUsecaseProvider = Provider((ref) {
@@ -89,16 +82,42 @@ final getTracksForArtistUsecaseProvider = Provider((ref) {
   return GetTracksForArtistUsecase(repository);
 });
 
-/// Provider for CreatePlaylistUsecase
-final createPlaylistUsecaseProvider = Provider((ref) {
-  final repository = ref.watch(playlistRepositoryProvider);
-  return CreatePlaylistUsecase(repository);
+// Playlist Repository and Use cases
+
+/// Provider for PlaylistRepository
+final playlistRepositoryProvider = Provider<PlaylistRepository>((ref) {
+  final localDataSource = LocalPlaylistDataSource();
+  return playlist_repo_impl.PlaylistRepositoryImpl(localDataSource);
 });
 
 /// Provider for GetAllPlaylistsUsecase
 final getAllPlaylistsUsecaseProvider = Provider((ref) {
   final repository = ref.watch(playlistRepositoryProvider);
   return GetAllPlaylistsUsecase(repository);
+});
+
+/// Provider for GetPlaylistByIdUsecase
+final getPlaylistByIdUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return GetPlaylistByIdUsecase(repository);
+});
+
+/// Provider for CreatePlaylistUsecase
+final createPlaylistUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return CreatePlaylistUsecase(repository);
+});
+
+/// Provider for UpdatePlaylistUsecase
+final updatePlaylistUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return UpdatePlaylistUsecase(repository);
+});
+
+/// Provider for DeletePlaylistUsecase
+final deletePlaylistUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return DeletePlaylistUsecase(repository);
 });
 
 /// Provider for AddTrackToPlaylistUsecase
@@ -113,9 +132,29 @@ final removeTrackFromPlaylistUsecaseProvider = Provider((ref) {
   return RemoveTrackFromPlaylistUsecase(repository);
 });
 
-/// Provider for DeletePlaylistUsecase
-final deletePlaylistUsecaseProvider = Provider((ref) {
+/// Provider for GetFavoritesUsecase
+final getFavoritesUsecaseProvider = Provider((ref) {
   final repository = ref.watch(playlistRepositoryProvider);
-  return DeletePlaylistUsecase(repository);
+  return GetFavoritesUsecase(repository);
 });
+
+/// Provider for AddToFavoritesUsecase
+final addToFavoritesUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return AddToFavoritesUsecase(repository);
+});
+
+/// Provider for RemoveFromFavoritesUsecase
+final removeFromFavoritesUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return RemoveFromFavoritesUsecase(repository);
+});
+
+/// Provider for IsFavoriteUsecase
+final isFavoriteUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(playlistRepositoryProvider);
+  return IsFavoriteUsecase(repository);
+});
+
+
 

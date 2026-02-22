@@ -16,7 +16,7 @@ class ThemeToggle extends StatelessWidget {
     return Switch(
       value: isDarkMode,
       onChanged: onChanged,
-      activeColor: Colors.purple,
+      activeThumbColor: Colors.purple,
       activeTrackColor: Colors.purple.withOpacity(0.5),
     );
   }

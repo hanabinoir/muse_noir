@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:muse_noir/core/theme/app_theme.dart';
+import 'package:muse_noir/core/utils/logger.dart';
+import 'package:muse_noir/data/datasources/hive_adapters/playlist_adapter.dart';
 import 'package:muse_noir/features/permissions/presentation/app_root.dart';
 import 'package:muse_noir/features/player/presentation/screens/home_screen.dart';
 
-void main() {
+final AppLogger _logger = AppLogger();
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Initialize Hive
+    await Hive.initFlutter();
+
+    // Register adapters
+    Hive.registerAdapter(PlaylistAdapter());
+
+    _logger.info('Hive initialized successfully');
+  } catch (e, st) {
+    _logger.error('Error initializing Hive', error: e, stackTrace: st);
+  }
+
   runApp(
     const ProviderScope(
       child: MyApp(),

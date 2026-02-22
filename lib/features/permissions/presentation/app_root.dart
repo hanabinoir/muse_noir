@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muse_noir/features/permissions/services/permission_initialization_service.dart';
 import 'package:muse_noir/features/permissions/presentation/screens/permission_request_screen.dart';
 import 'package:muse_noir/core/utils/logger.dart';
+import 'package:muse_noir/services/storage/hive_service.dart';
 
 /// Root widget that handles permission checks and app initialization
 /// Shows permission request screen if needed, otherwise shows main app content
@@ -32,7 +33,12 @@ class _AppRootState extends ConsumerState<AppRoot> {
 
   Future<void> _initializePermissions() async {
     try {
-      _logger.info('AppRoot: Initializing permissions');
+      _logger.info('AppRoot: Initializing permissions and Hive');
+
+      // Initialize Hive service first
+      final hiveService = HiveService();
+      await hiveService.initialize();
+      _logger.info('AppRoot: HiveService initialized successfully');
 
       final initService = ref.read(permissionInitServiceProvider);
       final isGranted = await initService.initializePermissions();
@@ -90,7 +96,7 @@ class _AppRootState extends ConsumerState<AppRoot> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.2),
+                color: Colors.purple.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
