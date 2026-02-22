@@ -36,7 +36,6 @@ class MediaScannerService {
       // Convert to Track entities
       final trackList = <Track>[];
       for (final song in musicTracks) {
-        final artwork = await getTrackArtwork(song.id);
         trackList.add(Track(
           id: song.id,
           title: song.title,
@@ -46,7 +45,6 @@ class MediaScannerService {
           filePath: song.data,
           albumId: song.albumId?.toString(),
           artistId: song.artistId?.toString(),
-          artwork: artwork,
         ));
       }
 
@@ -75,14 +73,12 @@ class MediaScannerService {
       // Convert to Album entities
       final albumList = <Album>[];
       for (final album in albums) {
-        final artwork = await getAlbumArtwork(album.id);
         albumList.add(Album(
           id: album.id,
           title: album.album,
           artist: album.artist ?? 'Unknown Artist',
           numOfSongs: album.numOfSongs,
           trackIds: [],
-          artwork: artwork,
         ));
       }
 
@@ -132,25 +128,29 @@ class MediaScannerService {
     try {
       _logger.info('Fetching tracks for album: $albumId');
 
-      final tracks = await _audioQuery.querySongs(
-        // albumId: int.parse(albumId),
-        sortType: SongSortType.DISPLAY_NAME,
-        orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.INTERNAL,
+      final tracks = await _audioQuery.queryAudiosFrom(
+        AudiosFromType.ALBUM_ID,
+        albumId.toString(),
+        // sortType: SongSortType.DISPLAY_NAME,
+        // orderType: OrderType.ASC_OR_SMALLER,
       );
 
+      // Sort by track number
+      tracks.sort((a, b) => (a.track ?? 0).compareTo(b.track ?? 0));
+
+      // final trackList = <Track>[];
       final trackList = tracks
-          .map((song) => Track(
-                id: song.id,
-                title: song.title,
-                artist: song.artist ?? 'Unknown Artist',
-                album: song.album ?? 'Unknown Album',
-                duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data,
-                albumId: song.albumId?.toString(),
-                artistId: song.artistId?.toString(),
-              ))
-          .toList();
+          .map((song)=>Track(
+            id: song.id,
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+            album: song.album ?? 'Unknown Album',
+            duration: Duration(milliseconds: song.duration ?? 0),
+            filePath: song.data,
+            albumId: song.albumId?.toString(),
+            artistId: song.artistId?.toString(),
+          ))
+      .toList();
 
       return trackList;
     } catch (e) {
@@ -164,24 +164,27 @@ class MediaScannerService {
     try {
       _logger.info('Fetching tracks for artist: $artistId');
 
-      final tracks = await _audioQuery.querySongs(
-        // artistId: int.parse(artistId),
-        sortType: SongSortType.DISPLAY_NAME,
+      final tracks = await _audioQuery.queryAudiosFrom(
+        AudiosFromType.ARTIST_ID, // Defines that we are querying by artist
+        artistId, // The specific ID of the artist
+        sortType: SongSortType.TITLE,
         orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.INTERNAL,
       );
+
+      // Sort by track number
+      tracks.sort((a, b) => (a.track ?? 0).compareTo(b.track ?? 0));
 
       final trackList = tracks
           .map((song) => Track(
-                id: song.id,
-                title: song.title,
-                artist: song.artist ?? 'Unknown Artist',
-                album: song.album ?? 'Unknown Album',
-                duration: Duration(milliseconds: song.duration ?? 0),
-                filePath: song.data,
-                albumId: song.albumId?.toString(),
-                artistId: song.artistId?.toString(),
-              ))
+            id: song.id,
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+            album: song.album ?? 'Unknown Album',
+            duration: Duration(milliseconds: song.duration ?? 0),
+            filePath: song.data,
+            albumId: song.albumId?.toString(),
+            artistId: song.artistId?.toString(),
+          ))
           .toList();
 
       return trackList;
@@ -225,21 +228,18 @@ class MediaScannerService {
 
       _logger.info('Search found ${filtered.length} results in External Storage Music directory');
 
-      final trackList = <Track>[];
-      for (final song in filtered) {
-        final artwork = await getTrackArtwork(song.id);
-        trackList.add(Track(
-          id: song.id,
-          title: song.title,
-          artist: song.artist ?? 'Unknown Artist',
-          album: song.album ?? 'Unknown Album',
-          duration: Duration(milliseconds: song.duration ?? 0),
-          filePath: song.data,
-          albumId: song.albumId?.toString(),
-          artistId: song.artistId?.toString(),
-          artwork: artwork,
-        ));
-      }
+      final trackList = filtered
+          .map((song) => Track(
+            id: song.id,
+            title: song.title,
+            artist: song.artist ?? 'Unknown Artist',
+            album: song.album ?? 'Unknown Album',
+            duration: Duration(milliseconds: song.duration ?? 0),
+            filePath: song.data,
+            albumId: song.albumId?.toString(),
+            artistId: song.artistId?.toString(),
+          ))
+          .toList();
 
       return trackList;
     } catch (e) {

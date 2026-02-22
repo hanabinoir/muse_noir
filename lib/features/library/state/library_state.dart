@@ -74,8 +74,8 @@ class ArtistNotifier extends Notifier<List<Artist>> {
   }
 }
 
-/// State notifier for managing search results
-class SearchNotifier extends Notifier<List<Track>> {
+/// State notifier for managing tracks from a specific album
+class AlbumTracksNotifier extends Notifier<List<Track>> {
   final AppLogger _logger = AppLogger();
 
   @override
@@ -83,26 +83,40 @@ class SearchNotifier extends Notifier<List<Track>> {
     return [];
   }
 
-  /// Search tracks by query
-  Future<void> searchTracks(String query) async {
+  /// Fetch tracks for a specific album
+  Future<void> fetchTracksForAlbum(String albumId) async {
     try {
-      if (query.isEmpty) {
-        state = [];
-        return;
-      }
-      _logger.info('Searching for: $query');
-      final searchTracksUsecase = ref.watch(searchTracksUsecaseProvider);
-      state = await searchTracksUsecase.call(query);
-      _logger.info('Search found ${state.length} results');
+      _logger.info('Fetching tracks for album: $albumId');
+      final getTracksForAlbumUsecase = ref.watch(getTracksForAlbumUsecaseProvider);
+      state = await getTracksForAlbumUsecase.call(albumId);
+      _logger.info('Fetched ${state.length} tracks for album');
     } catch (e, stackTrace) {
-      _logger.error('Error searching tracks: $e', error: e, stackTrace: stackTrace);
+      _logger.error('Error fetching album tracks: $e', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
+}
 
-  /// Clear search results
-  void clearSearch() {
-    state = [];
+/// State notifier for managing tracks from a specific artist
+class ArtistTracksNotifier extends Notifier<List<Track>> {
+  final AppLogger _logger = AppLogger();
+
+  @override
+  List<Track> build() {
+    return [];
+  }
+
+  /// Fetch tracks for a specific artist
+  Future<void> fetchTracksForArtist(String artistId) async {
+    try {
+      _logger.info('Fetching tracks for artist: $artistId');
+      final getTracksForArtistUsecase = ref.watch(getTracksForArtistUsecaseProvider);
+      state = await getTracksForArtistUsecase.call(artistId);
+      _logger.info('Fetched ${state.length} tracks for artist');
+    } catch (e, stackTrace) {
+      _logger.error('Error fetching artist tracks: $e', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
 }
 
@@ -121,9 +135,14 @@ final artistsProvider = NotifierProvider<ArtistNotifier, List<Artist>>(() {
   return ArtistNotifier();
 });
 
-/// Search results provider
-final searchResultsProvider = NotifierProvider<SearchNotifier, List<Track>>(() {
-  return SearchNotifier();
+/// Album tracks provider
+final albumTracksProvider = NotifierProvider<AlbumTracksNotifier, List<Track>>(() {
+  return AlbumTracksNotifier();
+});
+
+/// Artist tracks provider
+final artistTracksProvider = NotifierProvider<ArtistTracksNotifier, List<Track>>(() {
+  return ArtistTracksNotifier();
 });
 
 /// Search query provider for text input

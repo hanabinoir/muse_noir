@@ -8,8 +8,9 @@ import 'package:muse_noir/domain/usecases/get_all_albums_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_all_artists_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_all_playlists_usecase.dart';
 import 'package:muse_noir/domain/usecases/get_all_tracks_usecase.dart';
+import 'package:muse_noir/domain/usecases/get_tracks_for_album_usecase.dart';
+import 'package:muse_noir/domain/usecases/get_tracks_for_artist_usecase.dart';
 import 'package:muse_noir/domain/usecases/remove_track_from_playlist_usecase.dart';
-import 'package:muse_noir/domain/usecases/search_tracks_usecase.dart';
 import 'package:muse_noir/services/audio/audio_service.dart';
 import 'package:muse_noir/services/media/media_scanner.dart';
 import 'package:muse_noir/services/media/media_library_service.dart';
@@ -76,10 +77,16 @@ final getAllArtistsUsecaseProvider = Provider((ref) {
   return GetAllArtistsUsecase(repository);
 });
 
-/// Provider for SearchTracksUsecase
-final searchTracksUsecaseProvider = Provider((ref) {
+/// Provider for GetTracksForAlbumUsecase
+final getTracksForAlbumUsecaseProvider = Provider((ref) {
   final repository = ref.watch(mediaRepositoryProvider);
-  return SearchTracksUsecase(repository);
+  return GetTracksForAlbumUsecase(repository);
+});
+
+/// Provider for GetTracksForArtistUsecase
+final getTracksForArtistUsecaseProvider = Provider((ref) {
+  final repository = ref.watch(mediaRepositoryProvider);
+  return GetTracksForArtistUsecase(repository);
 });
 
 /// Provider for CreatePlaylistUsecase

@@ -58,13 +58,17 @@ class TracksScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final track = tracks[index];
                   return TrackTile(
+                    trackId: track.id,
                     title: track.title,
                     artist: track.artist,
                     album: track.album,
                     onTap: () async {
-                      // Play the track
+                      // Play all tracks as playlist starting from this track
                       final playerController = ref.read(playerControllerProvider);
-                      await playerController.playTrack(track);
+                      await playerController.playPlaylist(
+                        tracks,
+                        startIndex: index,
+                      );
                     },
                     onLongPress: () {
                       // Show track info

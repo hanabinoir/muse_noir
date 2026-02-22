@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muse_noir/core/widgets/base_scaffold.dart';
 import 'package:muse_noir/features/library/presentation/widgets/artist_card.dart';
+import 'package:muse_noir/features/library/presentation/screens/artist_tracks_screen.dart';
 import 'package:muse_noir/features/library/state/library_state.dart';
 
 /// Screen displaying all available artists
@@ -11,14 +12,19 @@ class ArtistsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final artists = ref.watch(artistsProvider);
+    final albums = ref.watch(albumsProvider);
 
-    // Auto-load artists when screen first appears
+    // Auto-load artists and albums when screen first appears
     ref.listen(artistsProvider, (previous, next) {});
 
     Future.microtask(() {
       final notifier = ref.read(artistsProvider.notifier);
       if (artists.isEmpty) {
         notifier.fetchAllArtists();
+      }
+      final albumNotifier = ref.read(albumsProvider.notifier);
+      if (albums.isEmpty) {
+        albumNotifier.fetchAllAlbums();
       }
     });
 
@@ -62,12 +68,32 @@ class ArtistsScreen extends ConsumerWidget {
                 itemCount: artists.length,
                 itemBuilder: (context, index) {
                   final artist = artists[index];
+
                   return ArtistCard(
+                    artistId: artist.id,
                     name: artist.name,
                     trackCount: artist.numberOfTracks,
                     albumCount: artist.numberOfAlbums,
-                    onTap: () {
-                      // Navigate to artist details
+                    onTap: () async {
+                      // Fetch and display tracks for this artist, categorized by album
+                      final artistTracksNotifier =
+                          ref.read(artistTracksProvider.notifier);
+                      await artistTracksNotifier.fetchTracksForArtist(
+                        artist.id.toString(),
+                      );
+
+                      // Navigate to artist tracks screen
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ArtistTracksScreen(
+                              artistName: artist.name,
+                              artistId: artist.id.toString(),
+                            ),
+                          ),
+                        );
+                      }
                     },
                   );
                 },

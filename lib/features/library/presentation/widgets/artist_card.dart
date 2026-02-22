@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 /// Artist card widget for list display
 class ArtistCard extends StatelessWidget {
+  final int artistId;
   final String name;
   final int trackCount;
   final int albumCount;
@@ -9,6 +11,7 @@ class ArtistCard extends StatelessWidget {
 
   const ArtistCard({
     super.key,
+    required this.artistId,
     required this.name,
     required this.trackCount,
     required this.albumCount,
@@ -29,13 +32,22 @@ class ArtistCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.purple.withOpacity(0.2),
-              child: const Icon(
-                Icons.person,
-                size: 40,
-                color: Colors.purple,
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.purple.withOpacity(0.2),
+              ),
+              child: QueryArtworkWidget(
+                id: artistId,
+                type: ArtworkType.ARTIST,
+                nullArtworkWidget: const Icon(
+                  Icons.person,
+                  size: 40,
+                  color: Colors.purple,
+                ),
+                artworkBorder: BorderRadius.circular(80),
               ),
             ),
             const SizedBox(height: 8),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muse_noir/core/widgets/base_scaffold.dart';
 import 'package:muse_noir/features/library/presentation/widgets/album_card.dart';
+import 'package:muse_noir/features/library/presentation/screens/album_tracks_screen.dart';
 import 'package:muse_noir/features/library/state/library_state.dart';
 
 /// Screen displaying all available albums
@@ -63,12 +64,31 @@ class AlbumsScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final album = albums[index];
                   return AlbumCard(
+                    albumId: album.id,
                     title: album.title,
                     artist: album.artist,
-                    trackCount: album.trackIds.length,
-                    artwork: album.artwork,
-                    onTap: () {
-                      // Navigate to album details
+                    trackCount: album.numOfSongs,
+                    onTap: () async {
+                      // Fetch and display tracks for this album
+                      final albumTracksNotifier =
+                          ref.read(albumTracksProvider.notifier);
+                      await albumTracksNotifier.fetchTracksForAlbum(
+                        album.id.toString(),
+                      );
+
+                      // Navigate to album tracks screen
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AlbumTracksScreen(
+                              albumTitle: album.title,
+                              albumId: album.id.toString(),
+                              albumIntId: album.id,
+                            ),
+                          ),
+                        );
+                      }
                     },
                   );
                 },

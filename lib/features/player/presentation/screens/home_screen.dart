@@ -4,7 +4,7 @@ import 'package:muse_noir/features/player/presentation/widgets/mini_player.dart'
 import 'package:muse_noir/features/library/presentation/screens/tracks_screen.dart';
 import 'package:muse_noir/features/library/presentation/screens/albums_screen.dart';
 import 'package:muse_noir/features/library/presentation/screens/artists_screen.dart';
-import 'package:muse_noir/features/library/presentation/screens/search_screen.dart';
+// import 'package:muse_noir/features/library/presentation/screens/search_screen.dart';
 import 'package:muse_noir/features/playlist/presentation/screens/playlists_screen.dart';
 import 'package:muse_noir/features/settings/presentation/screens/settings_screen.dart';
 import 'package:muse_noir/features/player/presentation/screens/player_screen.dart';
@@ -24,7 +24,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -62,10 +62,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               icon: Icon(Icons.playlist_play),
               text: 'Playlists',
             ),
-            Tab(
-              icon: Icon(Icons.search),
-              text: 'Search',
-            ),
+            // Tab(
+            //   icon: Icon(Icons.search),
+            //   text: 'Search',
+            // ),
           ],
         ),
       ),
@@ -78,7 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               AlbumsScreen(),
               ArtistsScreen(),
               PlaylistsScreen(),
-              SearchScreen(),
+              // SearchScreen(),
             ],
           ),
           Positioned(

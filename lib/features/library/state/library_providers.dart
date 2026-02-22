@@ -23,10 +23,10 @@ final allArtistsProvider =
 });
 
 /// Provider for search functionality
-final searchProvider =
-    NotifierProvider<SearchNotifier, List<Track>>(() {
-  return SearchNotifier();
-});
+// final searchProvider =
+//     NotifierProvider<SearchNotifier, List<Track>>(() {
+//   return SearchNotifier();
+// });
 
 /// Provider for search query input
 // final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(() {

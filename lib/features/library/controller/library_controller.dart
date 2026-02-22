@@ -62,25 +62,25 @@ class LibraryController {
   }
 
   /// Search for tracks
-  Future<void> searchTracks(String query) async {
-    try {
-      _appLogger.info('LibraryController: Searching for: $query');
-      // _ref.read(searchQueryProvider.notifier).state = query;
-
-      final notifier = _ref.read(searchProvider.notifier);
-      await notifier.searchTracks(query);
-    } catch (e) {
-      _appLogger.error('LibraryController: Error searching: $e');
-      rethrow;
-    }
-  }
+  // Future<void> searchTracks(String query) async {
+  //   try {
+  //     _appLogger.info('LibraryController: Searching for: $query');
+  //     // _ref.read(searchQueryProvider.notifier).state = query;
+  //
+  //     final notifier = _ref.read(searchProvider.notifier);
+  //     await notifier.searchTracks(query);
+  //   } catch (e) {
+  //     _appLogger.error('LibraryController: Error searching: $e');
+  //     rethrow;
+  //   }
+  // }
 
   /// Clear search results
-  void clearSearch() {
-    _appLogger.info('LibraryController: Clearing search');
-    // _ref.read(searchQueryProvider.notifier).state = '';
-    _ref.read(searchProvider.notifier).clearSearch();
-  }
+  // void clearSearch() {
+  //   _appLogger.info('LibraryController: Clearing search');
+  //   // _ref.read(searchQueryProvider.notifier).state = '';
+  //   _ref.read(searchProvider.notifier).clearSearch();
+  // }
 
   /// Get number of tracks
   int getTrackCount() {
