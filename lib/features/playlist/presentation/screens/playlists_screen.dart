@@ -5,6 +5,8 @@ import 'package:muse_noir/domain/entities/playlist.dart';
 import 'package:muse_noir/features/playlist/presentation/screens/create_playlist_screen.dart';
 import 'package:muse_noir/features/playlist/presentation/screens/playlist_detail_screen.dart';
 import 'package:muse_noir/features/playlist/state/playlist_state.dart';
+import 'package:muse_noir/features/library/state/library_state.dart';
+import 'package:muse_noir/features/playlist/presentation/widgets/playlist_artwork_widget.dart';
 
 /// Screen displaying all playlists with edit, drag-to-reorder, and delete functionality
 class PlaylistsScreen extends ConsumerStatefulWidget {
@@ -184,6 +186,11 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     required int index,
     required bool isEditMode,
   }) {
+    final allTracks = ref.watch(tracksProvider);
+    final playlistTracks = allTracks
+        .where((track) => playlist.trackIds.contains(track.id))
+        .toList();
+
     return GestureDetector(
       key: key,
       onTap: !isEditMode
@@ -220,17 +227,10 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                       ),
                     ),
                   )
-                : Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.playlist_play,
-                      color: Colors.purple,
-                    ),
+                : PlaylistArtworkWidget(
+                    playlist: playlist,
+                    playlistTracks: playlistTracks,
+                    size: 48,
                   ),
             title: Text(
               playlist.name,

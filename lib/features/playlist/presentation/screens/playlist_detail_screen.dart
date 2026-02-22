@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:muse_noir/core/widgets/base_scaffold.dart';
 import 'package:muse_noir/domain/entities/track.dart';
 import 'package:muse_noir/domain/entities/playlist.dart';
@@ -282,9 +283,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                 color: Colors.purple.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Icon(
-                Icons.music_note,
-                color: Colors.purple,
+              child: QueryArtworkWidget(
+                id: track.id,
+                type: ArtworkType.AUDIO,
+                nullArtworkWidget: const Icon(
+                  Icons.music_note,
+                  color: Colors.purple,
+                ),
+                artworkBorder: BorderRadius.circular(4),
               ),
             ),
       title: Text(
