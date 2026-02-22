@@ -4,12 +4,51 @@ import 'package:muse_noir/features/player/presentation/widgets/mini_player.dart'
 import 'package:muse_noir/features/library/presentation/screens/tracks_screen.dart';
 import 'package:muse_noir/features/library/presentation/screens/albums_screen.dart';
 import 'package:muse_noir/features/library/presentation/screens/artists_screen.dart';
-// import 'package:muse_noir/features/library/presentation/screens/search_screen.dart';
 import 'package:muse_noir/features/playlist/presentation/screens/playlists_screen.dart';
 import 'package:muse_noir/features/settings/presentation/screens/settings_screen.dart';
 import 'package:muse_noir/features/player/presentation/screens/player_screen.dart';
 
-/// Main home screen with navigation
+/// Tab configuration constants
+class TabConfig {
+  static const List<TabItem> tabs = [
+    TabItem(
+      label: 'Tracks',
+      icon: Icons.music_note,
+    ),
+    TabItem(
+      label: 'Albums',
+      icon: Icons.album,
+    ),
+    TabItem(
+      label: 'Artists',
+      icon: Icons.person,
+    ),
+    TabItem(
+      label: 'Playlists',
+      icon: Icons.playlist_play,
+    ),
+  ];
+
+  static const List<Widget> screens = [
+    TracksScreen(),
+    AlbumsScreen(),
+    ArtistsScreen(),
+    PlaylistsScreen(),
+  ];
+}
+
+/// Tab item configuration
+class TabItem {
+  final String label;
+  final IconData icon;
+
+  const TabItem({
+    required this.label,
+    required this.icon,
+  });
+}
+
+/// Main home screen with bottom navigation and tab content
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -17,21 +56,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _currentTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -40,60 +66,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         title: const Text('Muse Noir'),
         centerTitle: true,
         elevation: 0.5,
-        bottom: TabBar(
-          controller: _tabController,
-          onTap: (index) {
-            // Handle tab changes
-          },
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.music_note),
-              text: 'Tracks',
-            ),
-            Tab(
-              icon: Icon(Icons.album),
-              text: 'Albums',
-            ),
-            Tab(
-              icon: Icon(Icons.person),
-              text: 'Artists',
-            ),
-            Tab(
-              icon: Icon(Icons.playlist_play),
-              text: 'Playlists',
-            ),
-            // Tab(
-            //   icon: Icon(Icons.search),
-            //   text: 'Search',
-            // ),
-          ],
-        ),
       ),
-      body: Stack(
+      body: IndexedStack(
+        index: _currentTabIndex,
+        children: TabConfig.screens,
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          TabBarView(
-            controller: _tabController,
-            children: const [
-              TracksScreen(),
-              AlbumsScreen(),
-              ArtistsScreen(),
-              PlaylistsScreen(),
-              // SearchScreen(),
-            ],
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: MiniPlayer(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const PlayerScreen(),
-                  ),
-                );
-              },
-            ),
+          // Global MiniPlayer - displayed above tabs when playing
+          const MiniPlayer(),
+          // Bottom navigation tabs
+          BottomNavigationBar(
+            currentIndex: _currentTabIndex,
+            type: BottomNavigationBarType.fixed,
+            onTap: (index) {
+              setState(() {
+                _currentTabIndex = index;
+              });
+            },
+            items: TabConfig.tabs
+                .map((tab) => BottomNavigationBarItem(
+                      icon: Icon(tab.icon),
+                      label: tab.label,
+                    ))
+                .toList(),
           ),
         ],
       ),
@@ -102,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.purple,
               ),
               child: const Column(
@@ -178,5 +175,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 }
+
+
+
 
 

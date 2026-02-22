@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:typed_data';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muse_noir/core/widgets/base_scaffold.dart';
 import 'package:muse_noir/features/player/state/audio_state.dart';
 import 'package:muse_noir/features/player/controller/player_controller.dart';
-import 'package:muse_noir/domain/entities/track.dart';
 
 /// Main player screen showing now playing track with controls
 class PlayerScreen extends ConsumerWidget {
@@ -35,8 +34,8 @@ class PlayerScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Album art - extracted to prevent rebuilds
-          _buildArtworkContainer(track.artwork),
+          // Album art using QueryArtworkWidget - pass track ID
+          _buildArtworkContainer(track.id),
           const SizedBox(height: 32),
 
           // Track info - static, only changes with new track
@@ -61,12 +60,12 @@ class PlayerScreen extends ConsumerWidget {
     );
   }
 
-  /// Build track information - extracted to prevent unnecessary rebuilds
-  Widget _buildTrackInfo(Track track) {
+  /// Build track information - updates when track changes
+  Widget _buildTrackInfo(dynamic currentTrack) {
     return Column(
       children: [
         Text(
-          track.title ?? 'Unknown Track',
+          currentTrack?.title ?? 'Unknown Track',
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -75,7 +74,7 @@ class PlayerScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          track.artist ?? 'Unknown Artist',
+          currentTrack?.artist ?? 'Unknown Artist',
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey[400],
@@ -84,7 +83,7 @@ class PlayerScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          track.album ?? 'Unknown Album',
+          currentTrack?.album ?? 'Unknown Album',
           style: TextStyle(
             fontSize: 14,
             color: Colors.grey[500],
@@ -113,8 +112,8 @@ class PlayerScreen extends ConsumerWidget {
     );
   }
 
-  /// Build artwork container - extracted to prevent unnecessary rebuilds
-  Widget _buildArtworkContainer(List<int>? artwork) {
+  /// Build artwork container using QueryArtworkWidget
+  Widget _buildArtworkContainer(int trackId) {
     return Container(
       width: 300,
       height: 300,
@@ -122,26 +121,16 @@ class PlayerScreen extends ConsumerWidget {
         color: Colors.purple.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: artwork != null && artwork.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.memory(
-                Uint8List.fromList(artwork),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.music_note,
-                    size: 150,
-                    color: Colors.purple,
-                  );
-                },
-              ),
-            )
-          : const Icon(
-              Icons.music_note,
-              size: 150,
-              color: Colors.purple,
-            ),
+      child: QueryArtworkWidget(
+        id: trackId,
+        type: ArtworkType.AUDIO,
+        nullArtworkWidget: const Icon(
+          Icons.music_note,
+          size: 150,
+          color: Colors.purple,
+        ),
+        artworkBorder: BorderRadius.circular(16),
+      ),
     );
   }
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:typed_data';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muse_noir/features/player/state/audio_state.dart';
 import 'package:muse_noir/features/player/controller/player_controller.dart';
+import 'package:muse_noir/features/player/presentation/screens/player_screen.dart';
 
 /// Compact mini player widget shown at bottom of main screens
 class MiniPlayer extends ConsumerWidget {
@@ -21,7 +22,13 @@ class MiniPlayer extends ConsumerWidget {
 
     return currentTrack != null
         ? GestureDetector(
-            onTap: onTap,
+            onTap: onTap ?? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const PlayerScreen(),
+                ),
+              );
+            },
             child: Container(
               color: Colors.grey[900],
               padding: const EdgeInsets.symmetric(
@@ -30,8 +37,8 @@ class MiniPlayer extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  // Artwork container - stable, doesn't rebuild with playback state
-                  _buildArtworkContainer(currentTrack.artwork),
+                  // Artwork container using QueryArtworkWidget
+                  _buildArtworkContainer(currentTrack.id),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -84,8 +91,8 @@ class MiniPlayer extends ConsumerWidget {
         : const SizedBox.shrink();
   }
 
-  /// Build artwork container - extracted to prevent unnecessary rebuilds
-  Widget _buildArtworkContainer(List<int>? artwork) {
+  /// Build artwork container using QueryArtworkWidget
+  Widget _buildArtworkContainer(int trackId) {
     return Container(
       width: 48,
       height: 48,
@@ -93,24 +100,15 @@ class MiniPlayer extends ConsumerWidget {
         color: Colors.purple.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: artwork != null && artwork.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.memory(
-                Uint8List.fromList(artwork),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.music_note,
-                    color: Colors.purple,
-                  );
-                },
-              ),
-            )
-          : const Icon(
-              Icons.music_note,
-              color: Colors.purple,
-            ),
+      child: QueryArtworkWidget(
+        id: trackId,
+        type: ArtworkType.AUDIO,
+        nullArtworkWidget: const Icon(
+          Icons.music_note,
+          color: Colors.purple,
+        ),
+        artworkBorder: BorderRadius.circular(6),
+      ),
     );
   }
 }
