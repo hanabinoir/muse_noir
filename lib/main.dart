@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:muse_noir/core/theme/app_theme.dart';
 import 'package:muse_noir/core/utils/logger.dart';
 import 'package:muse_noir/data/datasources/hive_adapters/playlist_adapter.dart';
 import 'package:muse_noir/features/permissions/presentation/app_root.dart';
 import 'package:muse_noir/features/player/presentation/screens/home_screen.dart';
+
+import 'core/errors/app_exception.dart';
 
 final AppLogger _logger = AppLogger();
 
@@ -22,6 +25,21 @@ Future<void> main() async {
     _logger.info('Hive initialized successfully');
   } catch (e, st) {
     _logger.error('Error initializing Hive', error: e, stackTrace: st);
+  }
+
+  try {
+    // Configure just_audio_background for lock screen notifications
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.muse_noir.channel.audio',
+      androidNotificationChannelName: 'Audio playback',
+      androidNotificationOngoing: true,
+      androidStopForegroundOnPause: true,
+    );
+    _logger.info('Initializing AudioService');
+    // JustAudioBackground is already initialized in main.dart
+    _logger.info('AudioService initialized successfully');
+  } catch (e, st) {
+    _logger.error('Failed to initialize AudioService', error: e, stackTrace: st);
   }
 
   runApp(

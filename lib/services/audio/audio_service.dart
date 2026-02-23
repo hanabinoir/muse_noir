@@ -33,29 +33,6 @@ class AudioService {
   /// Check if currently playing
   bool get isPlaying => _audioPlayer.playing;
 
-  /// Initialize the audio player
-  Future<void> initialize() async {
-    try {
-      // Configure just_audio_background for lock screen notifications
-      await JustAudioBackground.init(
-        androidNotificationChannelId: 'com.muse_noir.channel.audio',
-        androidNotificationChannelName: 'Audio playback',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
-      );
-      _logger.info('Initializing AudioService');
-      // JustAudioBackground is already initialized in main.dart
-      _logger.info('AudioService initialized successfully');
-    } catch (e, st) {
-      _logger.error('Failed to initialize AudioService', error: e, stackTrace: st);
-      throw AudioPlaybackException(
-        message: 'Failed to initialize audio player: $e',
-        originalError: e,
-        stackTrace: st,
-      );
-    }
-  }
-
   /// Play a track from the given file path
   Future<void> playTrack(Track track) async {
     try {
