@@ -6,7 +6,7 @@ import 'package:muse_noir/core/utils/logger.dart';
 import '../../state/permission_state.dart';
 
 /// Screen shown when the app needs to request media permissions
-/// Guides users to grant READ_MEDIA_AUDIO permission
+/// Guides users to grant READ_MEDIA_AUDIO and POST_NOTIFICATIONS permissions
 class PermissionRequestScreen extends ConsumerWidget {
   final VoidCallback onPermissionGranted;
   static const routeName = '/permission-request';
@@ -18,11 +18,12 @@ class PermissionRequestScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final permissionStatus = ref.watch(permissionStatusProvider);
+    final mediaPermissionStatus = ref.watch(permissionStatusProvider);
+    final notificationPermissionStatus = ref.watch(notificationPermissionStatusProvider);
     final logger = AppLogger();
 
-    return WillPopScope(
-      onWillPop: () async => false, // Prevent back navigation
+    return PopScope(
+      canPop: false, // Prevent back navigation
       child: Scaffold(
         body: SafeArea(
           child: Padding(
@@ -35,7 +36,7 @@ class PermissionRequestScreen extends ConsumerWidget {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Colors.purple.withOpacity(0.2),
+                    color: Colors.purple.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -48,7 +49,7 @@ class PermissionRequestScreen extends ConsumerWidget {
 
                 // Title
                 const Text(
-                  'Music Permission Required',
+                  'Permissions Required',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -59,8 +60,8 @@ class PermissionRequestScreen extends ConsumerWidget {
 
                 // Description
                 Text(
-                  'Muse Noir needs permission to access your music files. '
-                  'We need access to your device\'s audio files to play them.',
+                  'Muse Noir needs permissions to access your music files and show notifications. '
+                  'We need access to your device\'s audio files to play them and notifications for lock screen controls.',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[400],
@@ -88,8 +89,17 @@ class PermissionRequestScreen extends ConsumerWidget {
                       _buildPermissionItem(
                         context,
                         Icons.audio_file,
-                        'Audio Files Access',
+                        'Audio Files Access (Required)',
                         'Read permission to access your music library',
+                        mediaPermissionStatus == PermissionStatus.granted,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPermissionItem(
+                        context,
+                        Icons.notifications,
+                        'Notifications (Android 13+)',
+                        'Display lock screen controls for music playback',
+                        notificationPermissionStatus == PermissionStatus.granted,
                       ),
                     ],
                   ),
@@ -109,15 +119,22 @@ class PermissionRequestScreen extends ConsumerWidget {
                     ),
                     onPressed: () async {
                       logger.info('User tapped request permission');
-                      final notifier = ref.read(permissionStatusProvider.notifier);
-                      final granted = await notifier.requestPermission();
-                      if (granted) {
-                        logger.info('Permission granted, calling callback');
+
+                      // Request media permission (critical)
+                      final mediaNotifier = ref.read(permissionStatusProvider.notifier);
+                      final mediaGranted = await mediaNotifier.requestPermission();
+
+                      // Request notification permission (for lock screen)
+                      final notificationNotifier = ref.read(notificationPermissionStatusProvider.notifier);
+                      await notificationNotifier.requestPermission();
+
+                      if (mediaGranted) {
+                        logger.info('Media permission granted, calling callback');
                         onPermissionGranted();
                       }
                     },
                     child: const Text(
-                      'Grant Permission',
+                      'Grant Permissions',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -125,7 +142,7 @@ class PermissionRequestScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 // Help link
-                if (permissionStatus == PermissionStatus.permanentlyDenied)
+                if (mediaPermissionStatus == PermissionStatus.permanentlyDenied)
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
@@ -159,13 +176,14 @@ class PermissionRequestScreen extends ConsumerWidget {
     IconData icon,
     String title,
     String description,
+    bool isGranted,
   ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(
-          icon,
-          color: Colors.purple,
+          isGranted ? Icons.check_circle : icon,
+          color: isGranted ? Colors.green : Colors.purple,
           size: 24,
         ),
         const SizedBox(width: 12),
@@ -175,9 +193,10 @@ class PermissionRequestScreen extends ConsumerWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
+                  color: isGranted ? Colors.green : Colors.white,
                 ),
               ),
               const SizedBox(height: 4),

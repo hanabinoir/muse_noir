@@ -3,12 +3,16 @@
     <!-- Android 13+ uses READ_MEDIA_AUDIO -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <!-- Fallback for Android < 13 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <!-- For background playback -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- For notifications (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- For accessing network -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -23,8 +27,13 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
+        <service
+            android:name="com.ryanheise.audioservice.AudioService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
         <activity
-            android:name=".MainActivity"
+            android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
@@ -41,16 +50,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <!-- Required for just_audio_background -->
-        <service android:name="com.ryanheise.audioservice.AudioService"
-            android:foregroundServiceType="mediaPlayback"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
 
         <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true">

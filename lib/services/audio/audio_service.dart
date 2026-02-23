@@ -1,4 +1,5 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:muse_noir/core/errors/app_exception.dart';
 import 'package:muse_noir/core/utils/logger.dart';
 import 'package:muse_noir/domain/entities/track.dart';
@@ -32,30 +33,26 @@ class AudioService {
   /// Check if currently playing
   bool get isPlaying => _audioPlayer.playing;
 
-  /// Initialize the audio player
-  Future<void> initialize() async {
-    try {
-      _logger.info('Initializing AudioService');
-      // Configuration can be added here if needed
-      _logger.info('AudioService initialized successfully');
-    } catch (e, st) {
-      _logger.error('Failed to initialize AudioService', error: e, stackTrace: st);
-      throw AudioPlaybackException(
-        message: 'Failed to initialize audio player: $e',
-        originalError: e,
-        stackTrace: st,
-      );
-    }
-  }
-
   /// Play a track from the given file path
   Future<void> playTrack(Track track) async {
     try {
       _logger.info('Playing track: ${track.title}');
 
-      // Set audio source to the track file
+      // Clear existing track(s) first
+      await _audioPlayer.stop();
+
+      // Set audio source to the track file with metadata for lock screen
       await _audioPlayer.setAudioSource(
-        AudioSource.file(track.filePath),
+        AudioSource.file(
+          track.filePath,
+          tag: MediaItem(
+            id: track.id.toString(),
+            title: track.title,
+            artist: track.artist,
+            album: track.album,
+            duration: track.duration,
+          ),
+        ),
       );
 
       // Start playback
@@ -83,14 +80,26 @@ class AudioService {
 
       _logger.info('Playing playlist with ${tracks.length} tracks, starting at index $startIndex');
 
-      // Create audio sources from all tracks
+      // Clear existing track(s) first
+      await _audioPlayer.stop();
+
+      // Create audio sources from all tracks with metadata for lock screen
       final audioSources = tracks
-          .map((track) => AudioSource.file(track.filePath))
+          .map((track) => AudioSource.file(
+            track.filePath,
+            tag: MediaItem(
+              id: track.id.toString(),
+              title: track.title,
+              artist: track.artist,
+              album: track.album,
+              duration: track.duration,
+            ),
+          ))
           .toList();
 
       // Set the playlist
-      await _audioPlayer.setAudioSource(
-        ConcatenatingAudioSource(children: audioSources),
+      await _audioPlayer.setAudioSources(
+        audioSources,
         initialIndex: startIndex,
         initialPosition: Duration.zero,
       );

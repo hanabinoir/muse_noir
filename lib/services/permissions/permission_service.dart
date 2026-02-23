@@ -61,14 +61,6 @@ class PermissionService {
     }
   }
 
-  /// Open app settings to allow user to manually enable permission (alternative name)
-  Future<void> openPermissionSettings() async {
-    try {
-      await permission_handler.openAppSettings();
-    } catch (e) {
-      throw PermissionException(message: 'Failed to open app settings: $e');
-    }
-  }
 
   /// Request all necessary permissions for media playback
   /// Returns true if all required permissions are granted
@@ -82,24 +74,12 @@ class PermissionService {
         'Permissions - Audio: ${audioStatus.name}, Storage: ${storageStatus.name}',
       );
 
-      return audioStatus.isGranted || storageStatus.isGranted;
+      return audioStatus.isGranted && storageStatus.isGranted;
     } catch (e) {
       throw PermissionException(message: 'Failed to request permissions: $e');
     }
   }
 
-  /// Check if all required permissions are granted
-  Future<bool> hasAllMediaPermissions() async {
-    try {
-      final audioStatus = await permission_handler.Permission.audio.status;
-      final storageStatus = await permission_handler.Permission.storage.status;
-
-      return audioStatus.isGranted || storageStatus.isGranted;
-    } catch (e) {
-      _logger.error('Error checking all permissions: $e');
-      return false;
-    }
-  }
 
   /// Get current permission status as string for logging/debugging
   Future<String> getPermissionStatus() async {
@@ -110,6 +90,52 @@ class PermissionService {
       return 'Audio: ${audioStatus.name}, Storage: ${storageStatus.name}';
     } catch (e) {
       return 'Error: $e';
+    }
+  }
+
+  /// Check if notification permission is granted (Android 13+)
+  Future<bool> hasNotificationPermission() async {
+    try {
+      final status = await permission_handler.Permission.notification.status;
+      _logger.info('Notification permission status: ${status.name}');
+      return status.isGranted;
+    } catch (e) {
+      _logger.error('Error checking notification permission: $e');
+      return false;
+    }
+  }
+
+  /// Request notification permission (Android 13+)
+  /// Returns true if permission is granted
+  Future<bool> requestNotificationPermission() async {
+    try {
+      final status = await permission_handler.Permission.notification.request();
+      _logger.info('Notification permission request result: ${status.name}');
+      return status.isGranted;
+    } catch (e) {
+      throw PermissionException(message: 'Failed to request notification permission: $e');
+    }
+  }
+
+  /// Check if notification permission is permanently denied
+  Future<bool> isNotificationPermissionPermanentlyDenied() async {
+    try {
+      final status = await permission_handler.Permission.notification.status;
+      return status.isPermanentlyDenied;
+    } catch (e) {
+      _logger.error('Error checking notification permission denial status: $e');
+      return false;
+    }
+  }
+
+  /// Check if notification permission is denied but can be requested again
+  Future<bool> isNotificationPermissionDenied() async {
+    try {
+      final status = await permission_handler.Permission.notification.status;
+      return status.isDenied;
+    } catch (e) {
+      _logger.error('Error checking notification permission denial status: $e');
+      return false;
     }
   }
 }

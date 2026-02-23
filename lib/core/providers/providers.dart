@@ -16,11 +16,6 @@ import 'package:muse_noir/data/datasources/local_playlist_datasource.dart';
 import 'package:muse_noir/data/repositories/media_repository.dart' as media_repo_impl;
 import 'package:muse_noir/data/repositories/playlist_repository.dart' as playlist_repo_impl;
 
-// Audio Service (Phase 2)
-final audioServiceProvider = Provider<AudioService>((ref) {
-  return AudioService();
-});
-
 // Permission Service (Phase 3)
 final permissionServiceProvider = Provider<PermissionService>((ref) {
   return PermissionService();
