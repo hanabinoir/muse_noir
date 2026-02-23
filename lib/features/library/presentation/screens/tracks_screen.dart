@@ -65,10 +65,7 @@ class TracksScreen extends ConsumerWidget {
                     onTap: () async {
                       // Play all tracks as playlist starting from this track
                       final playerController = ref.read(playerControllerProvider);
-                      await playerController.playPlaylist(
-                        tracks,
-                        startIndex: index,
-                      );
+                      await playerController.playTrack(track);
                     },
                     onLongPress: () {
                       // Show track info

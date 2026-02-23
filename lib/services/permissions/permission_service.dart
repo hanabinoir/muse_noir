@@ -112,6 +112,99 @@ class PermissionService {
       return 'Error: $e';
     }
   }
+
+  /// Check if notification permission is granted (Android 13+)
+  Future<bool> hasNotificationPermission() async {
+    try {
+      final status = await permission_handler.Permission.notification.status;
+      _logger.info('Notification permission status: ${status.name}');
+      return status.isGranted;
+    } catch (e) {
+      _logger.error('Error checking notification permission: $e');
+      return false;
+    }
+  }
+
+  /// Request notification permission (Android 13+)
+  /// Returns true if permission is granted
+  Future<bool> requestNotificationPermission() async {
+    try {
+      final status = await permission_handler.Permission.notification.request();
+      _logger.info('Notification permission request result: ${status.name}');
+      return status.isGranted;
+    } catch (e) {
+      throw PermissionException(message: 'Failed to request notification permission: $e');
+    }
+  }
+
+  /// Check if notification permission is permanently denied
+  Future<bool> isNotificationPermissionPermanentlyDenied() async {
+    try {
+      final status = await permission_handler.Permission.notification.status;
+      return status.isPermanentlyDenied;
+    } catch (e) {
+      _logger.error('Error checking notification permission denial status: $e');
+      return false;
+    }
+  }
+
+  /// Check if notification permission is denied but can be requested again
+  Future<bool> isNotificationPermissionDenied() async {
+    try {
+      final status = await permission_handler.Permission.notification.status;
+      return status.isDenied;
+    } catch (e) {
+      _logger.error('Error checking notification permission denial status: $e');
+      return false;
+    }
+  }
+
+  /// Request all required permissions including notifications and media
+  /// Returns true if all critical permissions are granted
+  Future<bool> requestAllPermissions() async {
+    try {
+      final mediaGranted = await requestMediaPermission();
+      final notificationGranted = await requestNotificationPermission();
+
+      _logger.info(
+        'All permissions requested - Media: $mediaGranted, Notification: $notificationGranted',
+      );
+
+      // Media permission is critical, notification is secondary but important
+      return mediaGranted;
+    } catch (e) {
+      throw PermissionException(message: 'Failed to request all permissions: $e');
+    }
+  }
+
+  /// Check if all required permissions are granted
+  Future<bool> hasAllRequiredPermissions() async {
+    try {
+      final hasMedia = await hasMediaPermission();
+      final hasNotification = await hasNotificationPermission();
+
+      _logger.info('Required permissions - Media: $hasMedia, Notification: $hasNotification');
+
+      // Media is required, notification is important for lock screen display
+      return hasMedia && hasNotification;
+    } catch (e) {
+      _logger.error('Error checking all required permissions: $e');
+      return false;
+    }
+  }
+
+  /// Get comprehensive permission status string
+  Future<String> getDetailedPermissionStatus() async {
+    try {
+      final audioStatus = await permission_handler.Permission.audio.status;
+      final storageStatus = await permission_handler.Permission.storage.status;
+      final notificationStatus = await permission_handler.Permission.notification.status;
+
+      return 'Audio: ${audioStatus.name}, Storage: ${storageStatus.name}, Notification: ${notificationStatus.name}';
+    } catch (e) {
+      return 'Error: $e';
+    }
+  }
 }
 
 

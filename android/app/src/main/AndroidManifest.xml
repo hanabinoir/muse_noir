@@ -3,12 +3,16 @@
     <!-- Android 13+ uses READ_MEDIA_AUDIO -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <!-- Fallback for Android < 13 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <!-- For background playback -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- For notifications (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- For accessing network -->
     <uses-permission android:name="android.permission.INTERNET" />
