@@ -70,7 +70,7 @@ class AudioService {
             title: track.title,
             artist: track.artist,
             album: track.album,
-            duration: Duration.zero,
+            duration: track.duration,
           ),
         ),
       );
@@ -109,7 +109,7 @@ class AudioService {
               title: track.title,
               artist: track.artist,
               album: track.album,
-              duration: Duration.zero,
+              duration: track.duration,
             ),
           ))
           .toList();

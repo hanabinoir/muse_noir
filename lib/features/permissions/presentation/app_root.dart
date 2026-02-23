@@ -51,9 +51,9 @@ class _AppRootState extends ConsumerState<AppRoot> {
       final notificationGranted = await initService.initializeNotificationPermission();
       _logger.info('AppRoot: Notification permission status: $notificationGranted');
 
-      // If media permission not granted, request it through UI
-      if (!mediaGranted) {
-        _logger.info('AppRoot: Media permission not granted, showing permission screen');
+      // If essential permissions are not granted, request it through UI
+      if (!mediaGranted || !notificationGranted) {
+        _logger.info('AppRoot: Media or notification permission not granted, showing permission screen');
         if (mounted) {
           setState(() {
             _permissionsInitialized = true;
@@ -61,13 +61,6 @@ class _AppRootState extends ConsumerState<AppRoot> {
           });
         }
         return;
-      }
-
-      // Media permission granted, try to auto-request notification permission if not granted
-      if (!notificationGranted) {
-        _logger.info('AppRoot: Attempting to auto-request notification permission');
-        final notificationNotifier = ref.read(notificationPermissionStatusProvider.notifier);
-        await notificationNotifier.requestPermission();
       }
 
       if (mounted) {
