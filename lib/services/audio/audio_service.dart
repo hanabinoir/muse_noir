@@ -38,6 +38,9 @@ class AudioService {
     try {
       _logger.info('Playing track: ${track.title}');
 
+      // Clear existing track(s) first
+      await _audioPlayer.stop();
+
       // Set audio source to the track file with metadata for lock screen
       await _audioPlayer.setAudioSource(
         AudioSource.file(
@@ -76,6 +79,9 @@ class AudioService {
       }
 
       _logger.info('Playing playlist with ${tracks.length} tracks, starting at index $startIndex');
+
+      // Clear existing track(s) first
+      await _audioPlayer.stop();
 
       // Create audio sources from all tracks with metadata for lock screen
       final audioSources = tracks
