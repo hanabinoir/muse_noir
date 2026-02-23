@@ -63,7 +63,7 @@ class TracksScreen extends ConsumerWidget {
                     artist: track.artist,
                     album: track.album,
                     onTap: () async {
-                      // Play all tracks as playlist starting from this track
+                      // Play the selected track
                       final playerController = ref.read(playerControllerProvider);
                       await playerController.playTrack(track);
                     },
