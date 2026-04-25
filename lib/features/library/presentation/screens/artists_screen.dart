@@ -12,53 +12,52 @@ class ArtistsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final artists = ref.watch(artistsProvider);
-    final albums = ref.watch(albumsProvider);
-
-    // Auto-load artists and albums when screen first appears
-    ref.listen(artistsProvider, (previous, next) {});
-
-    Future.microtask(() {
-      final notifier = ref.read(artistsProvider.notifier);
-      if (artists.isEmpty) {
-        notifier.fetchAllArtists();
-      }
-      final albumNotifier = ref.read(albumsProvider.notifier);
-      if (albums.isEmpty) {
-        albumNotifier.fetchAllAlbums();
-      }
-    });
 
     return BaseScaffold(
       title: 'Artists (${artists.length})',
-      body: artists.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.person,
-                    size: 80,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No artists found',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[400],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final notifier = ref.read(artistsProvider.notifier);
+          await notifier.fetchAllArtists();
+        },
+        child: artists.isEmpty
+            ? CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person,
+                            size: 80,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No artists found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pull down to load artists',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const CircularProgressIndicator(),
                 ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async {
-                final notifier = ref.read(artistsProvider.notifier);
-                await notifier.fetchAllArtists();
-              },
-              child: GridView.builder(
+              )
+            : GridView.builder(
                 padding: const EdgeInsets.all(8),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
@@ -98,7 +97,7 @@ class ArtistsScreen extends ConsumerWidget {
                   );
                 },
               ),
-            ),
+      ),
     );
   }
 }

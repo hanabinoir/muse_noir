@@ -13,47 +13,51 @@ class TracksScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tracks = ref.watch(tracksProvider);
 
-    // Auto-load tracks when screen first appears
-    ref.listen(tracksProvider, (previous, next) {});
-
-    Future.microtask(() {
-      final notifier = ref.read(tracksProvider.notifier);
-      if (tracks.isEmpty) {
-        notifier.fetchAllTracks();
-      }
-    });
-
     return BaseScaffold(
       title: 'Tracks (${tracks.length})',
-      body: tracks.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final notifier = ref.read(tracksProvider.notifier);
+          await notifier.fetchAllTracks();
+        },
+        child: tracks.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(
-                    Icons.music_note,
-                    size: 80,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No tracks found',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[400],
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.music_note,
+                            size: 80,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No tracks found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pull down to load tracks',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const CircularProgressIndicator(),
                 ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async {
-                final notifier = ref.read(tracksProvider.notifier);
-                await notifier.fetchAllTracks();
-              },
-              child: ListView.builder(
+              )
+            : ListView.builder(
                 itemCount: tracks.length,
                 itemBuilder: (context, index) {
                   final track = tracks[index];
@@ -79,7 +83,7 @@ class TracksScreen extends ConsumerWidget {
                   );
                 },
               ),
-            ),
+      ),
     );
   }
 }

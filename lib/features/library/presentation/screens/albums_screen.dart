@@ -13,47 +13,51 @@ class AlbumsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumsProvider);
 
-    // Auto-load albums when screen first appears
-    ref.listen(albumsProvider, (previous, next) {});
-
-    Future.microtask(() {
-      final notifier = ref.read(albumsProvider.notifier);
-      if (albums.isEmpty) {
-        notifier.fetchAllAlbums();
-      }
-    });
-
     return BaseScaffold(
       title: 'Albums (${albums.length})',
-      body: albums.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.album,
-                    size: 80,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No albums found',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[400],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final notifier = ref.read(albumsProvider.notifier);
+          await notifier.fetchAllAlbums();
+        },
+        child: albums.isEmpty
+            ? CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.album,
+                            size: 80,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No albums found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pull down to load albums',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const CircularProgressIndicator(),
                 ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async {
-                final notifier = ref.read(albumsProvider.notifier);
-                await notifier.fetchAllAlbums();
-              },
-              child: GridView.builder(
+              )
+            : GridView.builder(
                 padding: const EdgeInsets.all(8),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
@@ -93,7 +97,7 @@ class AlbumsScreen extends ConsumerWidget {
                   );
                 },
               ),
-            ),
+      ),
     );
   }
 }
