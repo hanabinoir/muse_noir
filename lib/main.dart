@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:just_audio_background/just_audio_background.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:muse_noir/core/theme/app_theme.dart';
 import 'package:muse_noir/core/utils/logger.dart';
 import 'package:muse_noir/data/datasources/hive_adapters/playlist_adapter.dart';
 import 'package:muse_noir/features/permissions/presentation/app_root.dart';
 import 'package:muse_noir/features/player/presentation/screens/home_screen.dart';
-
-import 'core/errors/app_exception.dart';
 
 final AppLogger _logger = AppLogger();
 
@@ -28,18 +26,11 @@ Future<void> main() async {
   }
 
   try {
-    // Configure just_audio_background for lock screen notifications
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.muse_noir.channel.audio',
-      androidNotificationChannelName: 'Audio playback',
-      androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
-    );
-    _logger.info('Initializing AudioService');
-    // JustAudioBackground is already initialized in main.dart
-    _logger.info('AudioService initialized successfully');
+    // Initialize MediaKit for audio playback
+    MediaKit.ensureInitialized();
+    _logger.info('MediaKit initialized successfully');
   } catch (e, st) {
-    _logger.error('Failed to initialize AudioService', error: e, stackTrace: st);
+    _logger.error('Failed to initialize MediaKit', error: e, stackTrace: st);
   }
 
   runApp(

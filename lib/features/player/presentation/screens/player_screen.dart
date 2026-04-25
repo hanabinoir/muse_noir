@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:muse_noir/core/widgets/base_scaffold.dart';
 import 'package:muse_noir/features/player/state/audio_state.dart';
 import 'package:muse_noir/features/player/controller/player_controller.dart';
@@ -48,10 +47,10 @@ class PlayerScreen extends ConsumerWidget {
           const SizedBox(height: 32),
 
           // Control buttons with real-time play/pause state
-          StreamBuilder<PlayerState>(
-            stream: audioService.playerStateStream,
+          StreamBuilder<bool>(
+            stream: audioService.playerStateStream.playing,
             builder: (context, snapshot) {
-              final isPlaying = snapshot.data?.playing ?? false;
+              final isPlaying = snapshot.data ?? false;
               return _buildControlButtons(context, ref, isPlaying);
             },
           ),
@@ -254,14 +253,5 @@ class PlayerScreen extends ConsumerWidget {
       return '${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds';
     }
     return '$twoDigitMinutes:$twoDigitSeconds';
-  }
-
-  static IconData _getLoopIcon(String loopMode) {
-    if (loopMode.contains('one')) {
-      return Icons.repeat_one;
-    } else if (loopMode.contains('all')) {
-      return Icons.repeat;
-    }
-    return Icons.repeat;
   }
 }

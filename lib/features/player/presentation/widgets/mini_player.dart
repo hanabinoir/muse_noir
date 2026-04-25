@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:muse_noir/features/player/state/audio_state.dart';
 import 'package:muse_noir/features/player/controller/player_controller.dart';
 import 'package:muse_noir/features/player/presentation/screens/player_screen.dart';
@@ -66,10 +65,10 @@ class MiniPlayer extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   // Only play/pause button rebuilds on playback state changes
-                  StreamBuilder<PlayerState>(
-                    stream: audioService.playerStateStream,
+                  StreamBuilder<bool>(
+                    stream: audioService.playerStateStream.playing,
                     builder: (context, snapshot) {
-                      final isPlaying = snapshot.data?.playing ?? false;
+                      final isPlaying = snapshot.data ?? false;
                       return IconButton(
                         icon: Icon(
                           isPlaying ? Icons.pause_circle : Icons.play_circle,

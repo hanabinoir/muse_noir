@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:media_kit/media_kit.dart' as mk;
 import 'package:muse_noir/domain/entities/track.dart';
 import 'package:muse_noir/features/player/state/playback_state_enum.dart';
 import 'package:muse_noir/services/audio/audio_service.dart';
@@ -14,12 +14,9 @@ final audioServiceProvider = Provider<AudioService>((ref) {
 final playbackStateProvider = StreamProvider<PlaybackState>((ref) {
   final audioService = ref.watch(audioServiceProvider);
 
-  return audioService.playerStateStream.map((state) {
-    if (state.playing) {
+  return audioService.playerStateStream.playing.map((isPlaying) {
+    if (isPlaying) {
       return PlaybackState.playing;
-    } else if (state.processingState == ProcessingState.loading ||
-        state.processingState == ProcessingState.buffering) {
-      return PlaybackState.loading;
     } else {
       return PlaybackState.paused;
     }
@@ -39,11 +36,11 @@ final durationProvider = StreamProvider<Duration?>((ref) {
 });
 
 // Current track index in playlist
-final currentIndexProvider = StreamProvider<int?>((ref) {
+final currentIndexProvider = StreamProvider<int>((ref) {
   final audioService = ref.watch(audioServiceProvider);
 
-  return audioService.sequenceStateStream.map((state) {
-    return state?.currentIndex;
+  return audioService.playlistStream.map((playlist) {
+    return playlist.index;
   });
 });
 
@@ -96,33 +93,33 @@ final playlistProvider = NotifierProvider<PlaylistNotifier, List<Track>>(() {
 });
 
 // Loop mode notifier
-class LoopModeNotifier extends Notifier<LoopMode> {
+class LoopModeNotifier extends Notifier<mk.PlaylistMode> {
   late AudioService _audioService;
 
   @override
-  LoopMode build() {
+  mk.PlaylistMode build() {
     _audioService = ref.watch(audioServiceProvider);
-    return LoopMode.off;
+    return mk.PlaylistMode.none;
   }
 
   Future<void> toggleLoopMode() async {
     final nextMode = switch (state) {
-      LoopMode.off => LoopMode.one,
-      LoopMode.one => LoopMode.all,
-      LoopMode.all => LoopMode.off,
+      mk.PlaylistMode.none => mk.PlaylistMode.single,
+      mk.PlaylistMode.single => mk.PlaylistMode.loop,
+      mk.PlaylistMode.loop => mk.PlaylistMode.none,
     };
 
     await _audioService.setLoopMode(nextMode);
     state = nextMode;
   }
 
-  Future<void> setLoopMode(LoopMode mode) async {
+  Future<void> setLoopMode(mk.PlaylistMode mode) async {
     await _audioService.setLoopMode(mode);
     state = mode;
   }
 }
 
-final loopModeProvider = NotifierProvider<LoopModeNotifier, LoopMode>(() {
+final loopModeProvider = NotifierProvider<LoopModeNotifier, mk.PlaylistMode>(() {
   return LoopModeNotifier();
 });
 

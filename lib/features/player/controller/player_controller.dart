@@ -128,7 +128,7 @@ class PlayerController {
       final currentIndex = audioService.currentIndex;
       final playlist = ref.read(playlistProvider);
 
-      if (currentIndex != null && currentIndex < playlist.length) {
+      if (currentIndex < playlist.length) {
         ref.read(currentTrackProvider.notifier).setCurrentTrack(playlist[currentIndex]);
       }
     } catch (e, st) {
@@ -147,7 +147,7 @@ class PlayerController {
       final currentIndex = audioService.currentIndex;
       final playlist = ref.read(playlistProvider);
 
-      if (currentIndex != null && currentIndex < playlist.length) {
+      if (currentIndex < playlist.length) {
         ref.read(currentTrackProvider.notifier).setCurrentTrack(playlist[currentIndex]);
       }
     } catch (e, st) {

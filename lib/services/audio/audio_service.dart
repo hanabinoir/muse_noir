@@ -1,62 +1,51 @@
-import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
+import 'package:media_kit/media_kit.dart' as mk;
 import 'package:muse_noir/core/errors/app_exception.dart';
 import 'package:muse_noir/core/utils/logger.dart';
 import 'package:muse_noir/domain/entities/track.dart';
 
-/// Service for audio playback using just_audio
+/// Service for audio playback using media_kit
 class AudioService {
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final mk.Player _player = mk.Player();
   final AppLogger _logger = AppLogger();
 
-  /// Get the underlying AudioPlayer instance
-  AudioPlayer get audioPlayer => _audioPlayer;
+  List<Track> _currentPlaylist = [];
+  int _currentIndex = 0;
 
-  /// Get stream of current player state
-  Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
+  /// Get the underlying Player instance
+  mk.Player get player => _player;
+
+  /// Get stream of current player state (for compatibility)
+  mk.PlayerStream get playerStateStream => _player.stream;
 
   /// Get stream of current playback position
-  Stream<Duration> get positionStream => _audioPlayer.positionStream;
+  Stream<Duration> get positionStream => _player.stream.position;
 
   /// Get stream of current track duration
-  Stream<Duration?> get durationStream => _audioPlayer.durationStream;
-
-  /// Get current playback state
-  PlayerState? get currentState => _audioPlayer.playerState;
+  Stream<Duration> get durationStream => _player.stream.duration;
 
   /// Get current playback position
-  Duration get currentPosition => _audioPlayer.position;
+  Duration get currentPosition => _player.state.position;
 
   /// Get current track duration
-  Duration? get duration => _audioPlayer.duration;
+  Duration get duration => _player.state.duration;
 
   /// Check if currently playing
-  bool get isPlaying => _audioPlayer.playing;
+  bool get isPlaying => _player.state.playing;
 
   /// Play a track from the given file path
   Future<void> playTrack(Track track) async {
     try {
       _logger.info('Playing track: ${track.title}');
 
-      // Clear existing track(s) first
-      await _audioPlayer.stop();
+      // Update current playlist and index
+      _currentPlaylist = [track];
+      _currentIndex = 0;
 
-      // Set audio source to the track file with metadata for lock screen
-      await _audioPlayer.setAudioSource(
-        AudioSource.file(
-          track.filePath,
-          tag: MediaItem(
-            id: track.id.toString(),
-            title: track.title,
-            artist: track.artist,
-            album: track.album,
-            duration: track.duration,
-          ),
-        ),
-      );
+      // Create a Media object from the track file path
+      final media = mk.Media(track.filePath);
 
-      // Start playback
-      await _audioPlayer.play();
+      // Open and play the media
+      await _player.open(media, play: true);
 
       _logger.info('Successfully started playing: ${track.title}');
     } catch (e, st) {
@@ -80,32 +69,18 @@ class AudioService {
 
       _logger.info('Playing playlist with ${tracks.length} tracks, starting at index $startIndex');
 
-      // Clear existing track(s) first
-      await _audioPlayer.stop();
+      // Update current playlist and index
+      _currentPlaylist = tracks;
+      _currentIndex = startIndex;
 
-      // Create audio sources from all tracks with metadata for lock screen
-      final audioSources = tracks
-          .map((track) => AudioSource.file(
-            track.filePath,
-            tag: MediaItem(
-              id: track.id.toString(),
-              title: track.title,
-              artist: track.artist,
-              album: track.album,
-              duration: track.duration,
-            ),
-          ))
-          .toList();
+      // Create Media objects from all tracks
+      final mediaList = tracks.map((track) => mk.Media(track.filePath)).toList();
 
-      // Set the playlist
-      await _audioPlayer.setAudioSources(
-        audioSources,
-        initialIndex: startIndex,
-        initialPosition: Duration.zero,
-      );
+      // Create a Playlist with the media items
+      final playlist = mk.Playlist(mediaList, index: startIndex);
 
-      // Start playback
-      await _audioPlayer.play();
+      // Open and play the playlist
+      await _player.open(playlist, play: true);
 
       _logger.info('Successfully started playing playlist from index $startIndex');
     } catch (e, st) {
@@ -122,7 +97,7 @@ class AudioService {
   Future<void> pause() async {
     try {
       _logger.info('Pausing playback');
-      await _audioPlayer.pause();
+      await _player.pause();
     } catch (e, st) {
       _logger.error('Failed to pause playback', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -137,7 +112,7 @@ class AudioService {
   Future<void> resume() async {
     try {
       _logger.info('Resuming playback');
-      await _audioPlayer.play();
+      await _player.play();
     } catch (e, st) {
       _logger.error('Failed to resume playback', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -152,7 +127,7 @@ class AudioService {
   Future<void> stop() async {
     try {
       _logger.info('Stopping playback');
-      await _audioPlayer.stop();
+      await _player.stop();
     } catch (e, st) {
       _logger.error('Failed to stop playback', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -167,7 +142,7 @@ class AudioService {
   Future<void> seek(Duration position) async {
     try {
       _logger.info('Seeking to position: ${position.inSeconds}s');
-      await _audioPlayer.seek(position);
+      await _player.seek(position);
     } catch (e, st) {
       _logger.error('Failed to seek', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -182,7 +157,10 @@ class AudioService {
   Future<void> next() async {
     try {
       _logger.info('Playing next track');
-      await _audioPlayer.seekToNext();
+      await _player.next();
+      if (_currentIndex < _currentPlaylist.length - 1) {
+        _currentIndex++;
+      }
     } catch (e, st) {
       _logger.error('Failed to skip to next track', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -197,7 +175,10 @@ class AudioService {
   Future<void> previous() async {
     try {
       _logger.info('Playing previous track');
-      await _audioPlayer.seekToPrevious();
+      await _player.previous();
+      if (_currentIndex > 0) {
+        _currentIndex--;
+      }
     } catch (e, st) {
       _logger.error('Failed to skip to previous track', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -212,7 +193,7 @@ class AudioService {
   Future<void> setSpeed(double speed) async {
     try {
       _logger.info('Setting playback speed to $speed');
-      await _audioPlayer.setSpeed(speed);
+      await _player.setRate(speed);
     } catch (e, st) {
       _logger.error('Failed to set playback speed', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -224,10 +205,10 @@ class AudioService {
   }
 
   /// Set the loop mode
-  Future<void> setLoopMode(LoopMode mode) async {
+  Future<void> setLoopMode(mk.PlaylistMode mode) async {
     try {
       _logger.info('Setting loop mode to $mode');
-      await _audioPlayer.setLoopMode(mode);
+      await _player.setPlaylistMode(mode);
     } catch (e, st) {
       _logger.error('Failed to set loop mode', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -242,7 +223,7 @@ class AudioService {
   Future<void> setShuffleModeEnabled(bool enabled) async {
     try {
       _logger.info('Setting shuffle mode to $enabled');
-      await _audioPlayer.setShuffleModeEnabled(enabled);
+      await _player.setShuffle(enabled);
     } catch (e, st) {
       _logger.error('Failed to set shuffle mode', error: e, stackTrace: st);
       throw AudioPlaybackException(
@@ -254,16 +235,16 @@ class AudioService {
   }
 
   /// Get current index in playlist
-  int? get currentIndex => _audioPlayer.currentIndex;
+  int get currentIndex => _currentIndex;
 
-  /// Get sequence state stream
-  Stream<SequenceState?> get sequenceStateStream => _audioPlayer.sequenceStateStream;
+  /// Get playlist stream
+  Stream<mk.Playlist> get playlistStream => _player.stream.playlist;
 
   /// Dispose the audio player and release resources
   Future<void> dispose() async {
     try {
       _logger.info('Disposing AudioService');
-      await _audioPlayer.dispose();
+      await _player.dispose();
       _logger.info('AudioService disposed successfully');
     } catch (e, st) {
       _logger.error('Error disposing AudioService', error: e, stackTrace: st);
